@@ -4,7 +4,8 @@
 entity.custom:npc.name=Custom NPC
 
 ## Spawn Egg
-item.spawn_egg.entity.custom:npc.name=Custom NPC Spawn Egg
+item.spawn_egg.entity.custom:npc.name=Spawn Custom NPC
 
 ## Interactions
-action.interact.trade=Trade with Custom NPC
+action.npc.edit=Open NPC Editor
+action.interact.trade=Trade

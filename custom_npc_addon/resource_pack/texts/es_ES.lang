@@ -1,10 +1,11 @@
-## Custom NPC Addon - Español (España)
+## Custom NPC Addon - Espanol (Espana)
 
 ## Entity Names
 entity.custom:npc.name=NPC Personalizado
 
 ## Spawn Egg
-item.spawn_egg.entity.custom:npc.name=Huevo Generador de NPC Personalizado
+item.spawn_egg.entity.custom:npc.name=Generar NPC Personalizado
 
 ## Interactions
-action.interact.trade=Comerciar con NPC Personalizado
+action.npc.edit=Abrir editor de NPC
+action.interact.trade=Comerciar

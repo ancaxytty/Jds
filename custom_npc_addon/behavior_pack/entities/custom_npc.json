@@ -1,39 +1,94 @@
 {
-  "format_version": "1.19.0",
+  "format_version": "1.21.0",
   "minecraft:entity": {
     "description": {
       "identifier": "custom:npc",
       "is_spawnable": true,
       "is_summonable": true,
-      "is_experimental": false
-    },
-    "component_groups": {
-      "custom:trader_mode": {
-        "minecraft:trade_table": {
-          "display_name": "Custom NPC",
-          "table": "trading/custom_npc_trades.json"
+      "is_experimental": false,
+      "properties": {
+        "custom:skin": {
+          "type": "int",
+          "range": [0, 7],
+          "default": 0,
+          "client_sync": true
         },
-        "minecraft:interact": {
-          "interactions": [
-            {
-              "on_interact": {
-                "filters": {
-                  "all_of": [
-                    {
-                      "test": "is_family",
-                      "subject": "other",
-                      "value": "player"
-                    }
-                  ]
-                }
-              },
-              "use_item": false,
-              "interact_text": "action.interact.trade"
-            }
-          ]
+        "custom:anim": {
+          "type": "int",
+          "range": [0, 4],
+          "default": 0,
+          "client_sync": true
         }
       }
     },
+
+    "component_groups": {
+      "npc:size_xs": { "minecraft:scale": { "value": 0.5 } },
+      "npc:size_s":  { "minecraft:scale": { "value": 0.75 } },
+      "npc:size_m":  { "minecraft:scale": { "value": 1.0 } },
+      "npc:size_l":  { "minecraft:scale": { "value": 1.5 } },
+      "npc:size_xl": { "minecraft:scale": { "value": 2.0 } },
+      "npc:size_xxl":{ "minecraft:scale": { "value": 3.0 } },
+
+      "npc:look_on": {
+        "minecraft:behavior.look_at_player": {
+          "priority": 7,
+          "look_distance": 8.0,
+          "probability": 0.9
+        },
+        "minecraft:behavior.random_look_around": { "priority": 9 }
+      },
+
+      "npc:trader_on": {
+        "minecraft:economy_trade_table": {
+          "display_name": "entity.custom:npc.name",
+          "table": "trading/custom_npc_trades.json",
+          "new_screen": true,
+          "persist_trades": true
+        }
+      },
+
+      "npc:hostile_on": {
+        "minecraft:attack": { "damage": 0 },
+        "minecraft:movement": { "value": 0.3 },
+        "minecraft:behavior.melee_attack": {
+          "priority": 3,
+          "track_target": true,
+          "reach_multiplier": 1.5
+        },
+        "minecraft:behavior.nearest_attackable_target": {
+          "priority": 4,
+          "must_see": true,
+          "reselect_targets": true,
+          "within_radius": 16,
+          "entity_types": [
+            {
+              "filters": {
+                "any_of": [
+                  { "test": "is_family", "subject": "other", "value": "player" },
+                  { "test": "is_family", "subject": "other", "value": "monster" }
+                ]
+              },
+              "max_dist": 16
+            }
+          ]
+        }
+      },
+
+      "npc:godmode_on": {
+        "minecraft:damage_sensor": {
+          "triggers": [
+            {
+              "cause": "all",
+              "deals_damage": false
+            }
+          ]
+        },
+        "minecraft:fire_immune": {},
+        "minecraft:knockback_resistance": { "value": 1.0, "max": 1.0 }
+      }
+    },
+
     "components": {
       "minecraft:type_family": {
         "family": ["custom_npc", "npc", "mob"]
@@ -43,8 +98,8 @@
         "height": 1.8
       },
       "minecraft:health": {
-        "value": 20,
-        "max": 20
+        "value": 200,
+        "max": 200
       },
       "minecraft:movement": {
         "value": 0.25
@@ -59,53 +114,94 @@
       "minecraft:can_climb": {},
       "minecraft:nameable": {
         "always_show": true,
-        "allow_name_tag_renaming": true,
-        "default_trigger": {
-          "event": "custom:become_trader"
-        }
+        "allow_name_tag_renaming": true
       },
+      "minecraft:persistent": {},
       "minecraft:breathable": {
         "total_supply": 15,
-        "suffocate_time": 0
+        "suffocate_time": 0,
+        "breathes_water": true
       },
       "minecraft:physics": {},
       "minecraft:pushable": {
-        "is_pushable": true,
+        "is_pushable": false,
         "is_pushable_by_piston": true
       },
-      "minecraft:damage_sensor": {
-        "triggers": {
-          "cause": "all",
-          "deals_damage": true
-        }
+      "minecraft:conditional_bandwidth_optimization": {},
+      "minecraft:interact": {
+        "interactions": [
+          {
+            "on_interact": {
+              "filters": {
+                "test": "is_family",
+                "subject": "other",
+                "value": "player"
+              },
+              "event": "npc:noop",
+              "target": "self"
+            },
+            "use_item": false,
+            "swing": false,
+            "play_sounds": "",
+            "interact_text": "action.npc.edit"
+          }
+        ]
       },
-      "minecraft:behavior.look_at_player": {
-        "priority": 8,
-        "look_distance": 6.0,
-        "probability": 0.02
-      },
-      "minecraft:behavior.random_look_around": {
-        "priority": 9
-      },
+      "minecraft:behavior.float": { "priority": 0 },
       "minecraft:behavior.random_stroll": {
         "priority": 6,
         "speed_multiplier": 0.6
       },
-      "minecraft:behavior.float": {
-        "priority": 0
-      }
+      "minecraft:behavior.random_look_around": { "priority": 9 }
     },
+
     "events": {
-      "custom:become_trader": {
-        "add": {
-          "component_groups": ["custom:trader_mode"]
-        }
-      },
+      "npc:noop": {},
+
       "minecraft:entity_spawned": {
-        "add": {
-          "component_groups": ["custom:trader_mode"]
-        }
-      }
+        "sequence": [
+          {
+            "add": { "component_groups": ["npc:size_m", "npc:look_on"] }
+          }
+        ]
+      },
+
+      "npc:size_xs": {
+        "remove": { "component_groups": ["npc:size_s", "npc:size_m", "npc:size_l", "npc:size_xl", "npc:size_xxl"] },
+        "add": { "component_groups": ["npc:size_xs"] }
+      },
+      "npc:size_s": {
+        "remove": { "component_groups": ["npc:size_xs", "npc:size_m", "npc:size_l", "npc:size_xl", "npc:size_xxl"] },
+        "add": { "component_groups": ["npc:size_s"] }
+      },
+      "npc:size_m": {
+        "remove": { "component_groups": ["npc:size_xs", "npc:size_s", "npc:size_l", "npc:size_xl", "npc:size_xxl"] },
+        "add": { "component_groups": ["npc:size_m"] }
+      },
+      "npc:size_l": {
+        "remove": { "component_groups": ["npc:size_xs", "npc:size_s", "npc:size_m", "npc:size_xl", "npc:size_xxl"] },
+        "add": { "component_groups": ["npc:size_l"] }
+      },
+      "npc:size_xl": {
+        "remove": { "component_groups": ["npc:size_xs", "npc:size_s", "npc:size_m", "npc:size_l", "npc:size_xxl"] },
+        "add": { "component_groups": ["npc:size_xl"] }
+      },
+      "npc:size_xxl": {
+        "remove": { "component_groups": ["npc:size_xs", "npc:size_s", "npc:size_m", "npc:size_l", "npc:size_xl"] },
+        "add": { "component_groups": ["npc:size_xxl"] }
+      },
+
+      "npc:look_on":  { "add": { "component_groups": ["npc:look_on"] } },
+      "npc:look_off": { "remove": { "component_groups": ["npc:look_on"] } },
+
+      "npc:trader_on":  { "add": { "component_groups": ["npc:trader_on"] } },
+      "npc:trader_off": { "remove": { "component_groups": ["npc:trader_on"] } },
+
+      "npc:hostile_on":  { "add": { "component_groups": ["npc:hostile_on"] } },
+      "npc:hostile_off": { "remove": { "component_groups": ["npc:hostile_on"] } },
+
+      "npc:godmode_on":  { "add": { "component_groups": ["npc:godmode_on"] } },
+      "npc:godmode_off": { "remove": { "component_groups": ["npc:godmode_on"] } }
     }
   }
 }

@@ -1,0 +1,28 @@
+{
+  "format_version": "1.10.0",
+  "render_controllers": {
+    "controller.render.custom_npc": {
+      "geometry": "Geometry.default",
+      "materials": [
+        { "*": "Material.default" }
+      ],
+      "arrays": {
+        "textures": {
+          "Array.skins": [
+            "Texture.s0",
+            "Texture.s1",
+            "Texture.s2",
+            "Texture.s3",
+            "Texture.s4",
+            "Texture.s5",
+            "Texture.s6",
+            "Texture.s7"
+          ]
+        }
+      },
+      "textures": [
+        "Array.skins[query.property('custom:skin')]"
+      ]
+    }
+  }
+}

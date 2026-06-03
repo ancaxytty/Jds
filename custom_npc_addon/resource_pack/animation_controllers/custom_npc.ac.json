@@ -1,0 +1,55 @@
+{
+  "format_version": "1.10.0",
+  "animation_controllers": {
+    "controller.animation.custom_npc.main": {
+      "initial_state": "idle",
+      "states": {
+        "idle": {
+          "animations": ["idle"],
+          "transitions": [
+            { "wave": "q.property('custom:anim') == 1" },
+            { "nod": "q.property('custom:anim') == 2" },
+            { "spin": "q.property('custom:anim') == 3" },
+            { "dance": "q.property('custom:anim') == 4" }
+          ]
+        },
+        "wave": {
+          "animations": ["wave"],
+          "transitions": [
+            { "idle": "q.property('custom:anim') == 0" },
+            { "nod": "q.property('custom:anim') == 2" },
+            { "spin": "q.property('custom:anim') == 3" },
+            { "dance": "q.property('custom:anim') == 4" }
+          ]
+        },
+        "nod": {
+          "animations": ["nod"],
+          "transitions": [
+            { "idle": "q.property('custom:anim') == 0" },
+            { "wave": "q.property('custom:anim') == 1" },
+            { "spin": "q.property('custom:anim') == 3" },
+            { "dance": "q.property('custom:anim') == 4" }
+          ]
+        },
+        "spin": {
+          "animations": ["spin"],
+          "transitions": [
+            { "idle": "q.property('custom:anim') == 0" },
+            { "wave": "q.property('custom:anim') == 1" },
+            { "nod": "q.property('custom:anim') == 2" },
+            { "dance": "q.property('custom:anim') == 4" }
+          ]
+        },
+        "dance": {
+          "animations": ["dance"],
+          "transitions": [
+            { "idle": "q.property('custom:anim') == 0" },
+            { "wave": "q.property('custom:anim') == 1" },
+            { "nod": "q.property('custom:anim') == 2" },
+            { "spin": "q.property('custom:anim') == 3" }
+          ]
+        }
+      }
+    }
+  }
+}

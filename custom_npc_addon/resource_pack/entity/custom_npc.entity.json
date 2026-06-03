@@ -7,12 +7,30 @@
         "default": "entity_alphatest"
       },
       "textures": {
-        "default": "textures/entity/custom_npc"
+        "s0": "textures/entity/custom_npc_0",
+        "s1": "textures/entity/custom_npc_1",
+        "s2": "textures/entity/custom_npc_2",
+        "s3": "textures/entity/custom_npc_3",
+        "s4": "textures/entity/custom_npc_4",
+        "s5": "textures/entity/custom_npc_5",
+        "s6": "textures/entity/custom_npc_6",
+        "s7": "textures/entity/custom_npc_7"
       },
       "geometry": {
         "default": "geometry.custom_npc"
       },
-      "render_controllers": ["controller.render.default"],
+      "scripts": {
+        "animate": ["ctrl_main"]
+      },
+      "animations": {
+        "ctrl_main": "controller.animation.custom_npc.main",
+        "idle": "animation.custom_npc.idle",
+        "wave": "animation.custom_npc.wave",
+        "nod": "animation.custom_npc.nod",
+        "spin": "animation.custom_npc.spin",
+        "dance": "animation.custom_npc.dance"
+      },
+      "render_controllers": ["controller.render.custom_npc"],
       "spawn_egg": {
         "base_color": "#3B8E35",
         "overlay_color": "#8B4513"
