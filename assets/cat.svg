@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="800" height="800" viewBox="0 0 800 800" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background gradient -->
+    <radialGradient id="bg" cx="50%" cy="42%" r="70%">
+      <stop offset="0%" stop-color="#fef3e2"/>
+      <stop offset="55%" stop-color="#fcd9a8"/>
+      <stop offset="100%" stop-color="#f3b873"/>
+    </radialGradient>
+
+    <!-- Fur gradient -->
+    <linearGradient id="fur" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#8b97a8"/>
+      <stop offset="100%" stop-color="#5d6b7e"/>
+    </linearGradient>
+    <linearGradient id="furBody" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7e8a9c"/>
+      <stop offset="100%" stop-color="#515e70"/>
+    </linearGradient>
+    <linearGradient id="belly" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#eef1f5"/>
+      <stop offset="100%" stop-color="#cbd3df"/>
+    </linearGradient>
+
+    <!-- Eye gradient -->
+    <radialGradient id="eye" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#b6e86a"/>
+      <stop offset="60%" stop-color="#74b62c"/>
+      <stop offset="100%" stop-color="#3f7a13"/>
+    </radialGradient>
+
+    <!-- Soft shadow -->
+    <filter id="soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#3a2a12" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="800" fill="url(#bg)"/>
+  <circle cx="400" cy="372" r="330" fill="#ffffff" opacity="0.18"/>
+
+  <!-- Ground shadow -->
+  <ellipse cx="400" cy="694" rx="210" ry="34" fill="#3a2a12" opacity="0.16"/>
+
+  <g filter="url(#soft)">
+    <!-- Tail -->
+    <path d="M548 612 C 690 612, 712 470, 628 430 C 690 470, 636 560, 540 560 Z"
+          fill="url(#furBody)"/>
+
+    <!-- Body -->
+    <path d="M286 408
+             C 250 470, 232 560, 268 632
+             C 296 686, 504 686, 532 632
+             C 568 560, 550 470, 514 408 Z"
+          fill="url(#furBody)"/>
+    <!-- Belly -->
+    <path d="M338 470 C 318 540, 326 612, 360 650 C 392 668, 408 668, 440 650
+             C 474 612, 482 540, 462 470 Z" fill="url(#belly)"/>
+
+    <!-- Front paws -->
+    <ellipse cx="352" cy="650" rx="44" ry="34" fill="url(#fur)"/>
+    <ellipse cx="448" cy="650" rx="44" ry="34" fill="url(#fur)"/>
+    <path d="M352 660 v18 M448 660 v18" stroke="#3c4858" stroke-width="3" stroke-linecap="round"/>
+
+    <!-- Ears -->
+    <path d="M300 240 L 286 132 L 386 214 Z" fill="url(#fur)"/>
+    <path d="M500 240 L 514 132 L 414 214 Z" fill="url(#fur)"/>
+    <path d="M312 226 L 305 168 L 360 214 Z" fill="#e7a9b4"/>
+    <path d="M488 226 L 495 168 L 440 214 Z" fill="#e7a9b4"/>
+
+    <!-- Head -->
+    <ellipse cx="400" cy="318" rx="148" ry="132" fill="url(#fur)"/>
+
+    <!-- Tabby stripes on forehead -->
+    <g stroke="#3c4858" stroke-width="9" stroke-linecap="round" opacity="0.55" fill="none">
+      <path d="M400 196 v54"/>
+      <path d="M366 200 l-10 50"/>
+      <path d="M434 200 l10 50"/>
+    </g>
+
+    <!-- Cheeks / muzzle -->
+    <ellipse cx="400" cy="372" rx="92" ry="64" fill="#eef1f5" opacity="0.95"/>
+
+    <!-- Eyes -->
+    <g>
+      <ellipse cx="345" cy="316" rx="38" ry="44" fill="url(#eye)"/>
+      <ellipse cx="455" cy="316" rx="38" ry="44" fill="url(#eye)"/>
+      <!-- Pupils -->
+      <ellipse cx="345" cy="318" rx="12" ry="34" fill="#10240a"/>
+      <ellipse cx="455" cy="318" rx="12" ry="34" fill="#10240a"/>
+      <!-- Highlights -->
+      <circle cx="336" cy="300" r="9" fill="#ffffff" opacity="0.9"/>
+      <circle cx="446" cy="300" r="9" fill="#ffffff" opacity="0.9"/>
+      <!-- Eye outline -->
+      <ellipse cx="345" cy="316" rx="38" ry="44" fill="none" stroke="#2b333f" stroke-width="3"/>
+      <ellipse cx="455" cy="316" rx="38" ry="44" fill="none" stroke="#2b333f" stroke-width="3"/>
+    </g>
+
+    <!-- Nose -->
+    <path d="M386 366 L 414 366 L 400 384 Z" fill="#e07a8c" stroke="#b85a6c" stroke-width="2"/>
+    <!-- Mouth -->
+    <path d="M400 384 v12 M400 396 C 386 410, 372 406, 366 398
+             M400 396 C 414 410, 428 406, 434 398"
+          fill="none" stroke="#3c4858" stroke-width="4" stroke-linecap="round"/>
+
+    <!-- Whiskers -->
+    <g stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.92">
+      <path d="M318 372 C 270 366, 236 360, 214 356"/>
+      <path d="M320 388 C 274 392, 240 398, 218 404"/>
+      <path d="M482 372 C 530 366, 564 360, 586 356"/>
+      <path d="M480 388 C 526 392, 560 398, 582 404"/>
+    </g>
+  </g>
+</svg>
