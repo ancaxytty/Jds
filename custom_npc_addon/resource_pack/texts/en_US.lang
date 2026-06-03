@@ -1,0 +1,10 @@
+## Custom NPC Addon - English (US)
+
+## Entity Names
+entity.custom:npc.name=Custom NPC
+
+## Spawn Egg
+item.spawn_egg.entity.custom:npc.name=Custom NPC Spawn Egg
+
+## Interactions
+action.interact.trade=Trade with Custom NPC

@@ -1,0 +1,70 @@
+{
+  "tiers": [
+    {
+      "groups": [
+        {
+          "num_to_select": 3,
+          "trades": [
+            {
+              "wants": [
+                {
+                  "item": "minecraft:emerald",
+                  "quantity": {
+                    "min": 1,
+                    "max": 3
+                  }
+                }
+              ],
+              "gives": [
+                {
+                  "item": "minecraft:diamond",
+                  "quantity": 1
+                }
+              ],
+              "max_uses": 10,
+              "reward_exp": true
+            },
+            {
+              "wants": [
+                {
+                  "item": "minecraft:diamond",
+                  "quantity": 1
+                }
+              ],
+              "gives": [
+                {
+                  "item": "minecraft:emerald",
+                  "quantity": {
+                    "min": 5,
+                    "max": 10
+                  }
+                }
+              ],
+              "max_uses": 10,
+              "reward_exp": true
+            },
+            {
+              "wants": [
+                {
+                  "item": "minecraft:gold_ingot",
+                  "quantity": {
+                    "min": 3,
+                    "max": 5
+                  }
+                }
+              ],
+              "gives": [
+                {
+                  "item": "minecraft:enchanted_golden_apple",
+                  "quantity": 1
+                }
+              ],
+              "max_uses": 5,
+              "reward_exp": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

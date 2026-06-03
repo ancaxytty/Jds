@@ -1,0 +1,22 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "custom:npc",
+      "materials": {
+        "default": "entity_alphatest"
+      },
+      "textures": {
+        "default": "textures/entity/custom_npc"
+      },
+      "geometry": {
+        "default": "geometry.custom_npc"
+      },
+      "render_controllers": ["controller.render.default"],
+      "spawn_egg": {
+        "base_color": "#3B8E35",
+        "overlay_color": "#8B4513"
+      }
+    }
+  }
+}
