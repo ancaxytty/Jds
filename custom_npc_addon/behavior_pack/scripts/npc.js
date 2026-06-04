@@ -11,8 +11,8 @@ import {
   SKINS,
   ANIMS,
   MAX_DAMAGE,
-  CUBE_SKIN_INDEX,
   MODEL_COUNT,
+  modelTextureIndex,
 } from "./config.js";
 import { clamp } from "./util.js";
 
@@ -48,12 +48,14 @@ export function getConfig(npc) {
 
 // ---------------------------------------------------------------------
 // Texture refresh: humanoid models use the chosen skin (0-7),
-// cube / 3D models use the dedicated cube texture (index 8).
+// 3D models use their OWN dedicated texture (index 8 + model-1).
 // ---------------------------------------------------------------------
 function refreshTexture(npc) {
   const model = getDP(npc, DP.model, DEFAULTS.model);
   const skin = getDP(npc, DP.skin, DEFAULTS.skin);
-  const texIndex = model === 0 ? clamp(Math.round(skin), 0, SKINS.length - 1) : CUBE_SKIN_INDEX;
+  const texIndex = model === 0
+    ? clamp(Math.round(skin), 0, SKINS.length - 1)
+    : modelTextureIndex(model);
   npc.setProperty("custom:skin", texIndex);
 }
 

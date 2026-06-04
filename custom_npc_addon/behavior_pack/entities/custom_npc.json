@@ -9,7 +9,7 @@
       "properties": {
         "custom:skin": {
           "type": "int",
-          "range": [0, 8],
+          "range": [0, 37],
           "default": 0,
           "client_sync": true
         },

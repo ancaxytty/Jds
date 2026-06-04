@@ -45,13 +45,29 @@ export const SKINS = [
 // Texture index reserved for the cube / 3D model skin (index 8 in Array.skins)
 export const CUBE_SKIN_INDEX = 8;
 
-// Number of cube model.json placeholders (model-1 .. model-30)
+// Number of 3D model.json placeholders (model-1 .. model-30)
 export const MODEL_COUNT = 30;
 
-// Model option labels: index 0 = humanoid, 1..30 = cube models
+// First 10 are professional multi-cube 3D models; rest are themed cubes.
+export const MODEL_NAMES = [
+  "Mecha Robot", "Caballero", "Mago", "Golem", "Rey Slime",
+  "Dron", "Pinguino", "Zorro", "Mech Pesado", "Treant",
+];
+
+// Per-model texture index inside Array.skins: humanoid skins occupy 0..7,
+// model textures occupy 8..(8+MODEL_COUNT-1). Model N (1-based) -> 7 + N.
+export function modelTextureIndex(model) {
+  return 7 + model;
+}
+
+// Model option labels: index 0 = humanoid, 1..30 = 3D models
 export function modelLabels() {
   const out = ["§aHumanoide §8(usa skin)"];
-  for (let i = 1; i <= MODEL_COUNT; i++) out.push(`§bModelo 3D §f${i}`);
+  for (let i = 1; i <= MODEL_COUNT; i++) {
+    const nm = MODEL_NAMES[i - 1] || ("Cubo Criatura " + (i - 10));
+    const tag = i <= 10 ? "§b★ " : "§3";
+    out.push(`${tag}${nm} §8#${i}`);
+  }
   return out;
 }
 

@@ -1,0 +1,17 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "§6§lCustom NPC §r§7| Tema Pergamino (UI)",
+    "description": "§eTexture pack opcional: da a los formularios y dialogos un\n§7aspecto de pergamino medieval con marco de piedra.\n§8Actívalo POR ENCIMA del resource pack del addon.",
+    "uuid": "f1a2b3c4-d5e6-4f70-8a91-2b3c4d5e6f70",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 0]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "f2b3c4d5-e6f7-4081-9b02-3c4d5e6f7081",
+      "version": [1, 0, 0]
+    }
+  ]
+}

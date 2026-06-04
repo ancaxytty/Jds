@@ -1,130 +1,90 @@
 # Custom NPC Pro Editor — Minecraft Bedrock Addon
 
-> NPCs totalmente personalizables mediante un **menú interactivo en el juego**.
-> Toca un NPC para **editarlo o hablar con él**; agáchate (sneak) + toca para abrir siempre el editor.
+> NPCs totalmente personalizables con **menú interactivo en el juego**, **modelos 3D
+> profesionales** con **textura independiente por modelo** y **diálogos estilo pergamino**.
 
-**Versión:** 3.0.0 · **Compatibilidad:** Minecraft Bedrock **1.21.0+** · **Experimentos:** no requeridos
-
----
-
-## ✨ Características
-
-| Función | Descripción |
-|---|---|
-| 🪧 **Nombre** | Cambia el nombre (colores con `&`, ej. `&bAzul`). |
-| 🎨 **Skin** | 8 skins para el modelo Humanoide. |
-| 🧊 **Modelos 3D** | Botón **Modelos** con 30 modelos 3D intercambiables (`model-1`…`model-30`). |
-| 📏 **Tamaño** | 6 tamaños: Diminuto (0.5x) → Colosal (3.0x). |
-| 💃 **Animaciones** | Idle, Saludar, Asentir, Girar, Bailar (modelo humanoide). |
-| 👁️ **Mirar al jugador** | On/Off. |
-| 🚶 **Movimiento** | **Se mueve / no se mueve** (camina o queda estático). |
-| ⚔️ **Hostil + Daño** | Enemigo con daño configurable (0–100). |
-| 🛡️ **Inmortal** | Modo invulnerable. |
-| 💬 **Diálogos custom** | Crea diálogos por páginas (separadas con `|`) que se muestran al tocar. |
-| 🏷️ **Etiquetas (tags)** | Añadir / eliminar. |
-| ⌨️ **Comandos** | Ejecuta y guarda comandos desde el NPC. |
-| 📜 **Funciones** | Ejecuta archivos `.mcfunction`. |
-| 🛒 **Comerciante** | Tienda al tocar. |
-| 💾 **Presets** | Guarda y reutiliza configuraciones completas. |
-| 🧰 **Acciones** | Traer/teleportar, curar, clonar, dar huevo, eliminar. |
-
-Todo se **guarda automáticamente** y persiste al cerrar el mundo.
+**Versión:** 4.0.0 · **Compatibilidad:** Minecraft Bedrock **1.21.0+** · **Experimentos:** no requeridos
 
 ---
 
-## 🧊 Modelos 3D (model.json) — cómo funciona
+## ✨ Novedades v4.0.0
 
-El addon incluye **30 modelos cubo de relleno** listos para reemplazar por los tuyos:
+- 🧊 **Textura independiente por modelo:** cada carpeta `model-N` contiene **su propio**
+  `model.json` **y** `texture.png`. Cambia uno sin afectar a los demás.
+- 🏆 **10 modelos 3D profesionales** (multi-cubo, se ven 3D de verdad):
+  **Mecha Robot, Caballero, Mago, Golem, Rey Slime, Dron, Pingüino, Zorro, Mech Pesado, Treant**.
+  Los slots 11–30 son cubos-criatura temáticos (también con su textura propia).
+- 💬 **Diálogos estilo pergamino** (inspirado en el cuadro "Village Elder"): nombre del
+  hablante como título, texto en pergamino entre comillas, contador de página y botones claros.
+- 📜 **Texture pack opcional** (`ui_theme_pack`) que da a los formularios un look de
+  pergamino + marco de piedra + botones de madera.
+
+## 🎛️ Personalización completa
+Nombre · Skin (8) · **Modelos 3D (30, textura propia)** · Tamaño (6) · Animaciones (5) ·
+Mirar al jugador · Movimiento on/off · Hostil + Daño (0–100) · Inmortal · **Diálogos** ·
+Tags · Comandos · Funciones · Comerciante · Presets · Acciones.
+
+---
+
+## 🧊 Modelos 3D con textura propia — estructura
 
 ```
 resource_pack/models/entity/
-├── model-1/model.json     (geometry.cube_model_1)
-├── model-2/model.json     (geometry.cube_model_2)
+├── model-1/
+│   ├── model.json      (geometry.model_1)   ← Mecha Robot
+│   └── texture.png     (su textura propia)
+├── model-2/  (Caballero)  ├ model.json + texture.png
 ├── ...
-└── model-30/model.json    (geometry.cube_model_30)
+└── model-30/ (Cubo Criatura 20) ├ model.json + texture.png
 ```
 
-- En el editor: botón **Modelos 3D** → elige **Humanoide** o **Modelo 3D 1..30**.
-- Cada cubo usa la textura por defecto `textures/entity/models/cube.png`.
+Cada modelo usa **su propia textura** (índice dedicado en el render controller).
+Las 8 skins humanoides solo aplican al modelo **Humanoide**.
 
-### Subir tus propios modelos de Blockbench
-1. En Blockbench: *File → Export → Bedrock Geometry* (`.json`).
-2. Pega tu archivo en `models/entity/model-N/model.json` (reemplaza el cubo).
-3. **IMPORTANTE:** dentro del archivo, cambia el `identifier` a **`geometry.cube_model_N`**
-   (el mismo número de la carpeta) para que el addon lo reconozca.
-4. (Opcional) Reemplaza `textures/entity/models/cube.png` por la textura de tu modelo,
-   o edita el render controller para usar texturas por modelo.
-5. En el juego, abre el editor → **Modelos 3D** → selecciona ese número.
-
-> Los modelos 3D usan la textura "cube"; las 8 skins humanoides aplican al modelo Humanoide.
+### Cambiar un modelo y su textura (Blockbench)
+1. En Blockbench exporta tu geometría (*Bedrock Geometry*) y su textura.
+2. Reemplaza `model-N/model.json` y `model-N/texture.png`.
+3. **Importante:** en el `model.json`, deja el `identifier` como **`geometry.model_N`**
+   (el número de la carpeta). ¡Eso es todo!
 
 ---
 
-## 💬 Diálogos custom
+## 💬 Diálogos (estilo pergamino)
+1. Editor → **Diálogos** → escribe el texto; separa páginas con `|`.
+2. Activa **"Hablar al tocar"**.
+3. Toque normal = habla (cuadro con nombre + pergamino); **sneak + toque** = editor.
 
-1. Editor → **Diálogos**.
-2. Escribe el texto; separa páginas con `|`. Ej: `Hola!|Bienvenido|Vuelve pronto`.
-3. Activa **"Hablar al tocar"**.
-4. Ahora un **toque normal** muestra el diálogo; **sneak + toque** abre el editor.
+Para el look completo de pergamino con marco de piedra, activa el pack opcional
+**`ui_theme_pack`** por encima del resource pack (ver su README).
 
 ---
 
 ## 📥 Instalación
+- **`custom_npc_addon.mcaddon`**: ábrelo y Minecraft importa los 3 packs
+  (behavior + resource + tema de UI opcional). Activa **behavior + resource**;
+  el **tema de UI es opcional** (actívalo por encima del resource para el look pergamino).
+- O importa los `.mcpack` por separado.
 
-### `.mcaddon` (recomendada)
-1. Descarga **`custom_npc_addon.mcaddon`** y ábrelo (Minecraft lo importa solo).
-2. Al crear/editar el mundo, activa **ambos** packs (behavior + resource).
-
-### `.mcpack` individuales
-Importa `behavior_pack.mcpack` y `resource_pack.mcpack` por separado.
-
-> El behavior y el resource pack están **vinculados**: actívalos **los dos**.
+## 🎮 Uso
+`!npc` en el chat (o `/summon custom:npc`) → coloca el NPC → **tócalo** para editar/hablar.
 
 ---
 
-## 🎮 Uso rápido
-1. Escribe `!npc` en el chat para recibir el huevo (o `/give @s custom:npc_spawn_egg`, o `/summon custom:npc`).
-2. Coloca el NPC.
-3. **Toca** el NPC → editar o hablar · **sneak + toca** → editor.
-
----
-
-## 🔧 Cómo funciona (técnico)
-
-- **Modelo / Skin / Animación:** propiedades de entidad (`custom:model`, `custom:skin`,
-  `custom:anim`, `client_sync`) leídas por el *render controller* (arrays `Array.geos` y
-  `Array.skins`) y el *animation controller* vía `query.property(...)`.
-- **Tamaño / Mirar / Movimiento / Hostil / Inmortal / Tienda:** `component_groups`
-  activados por eventos (`npc:size_*`, `npc:move_on/off`, `npc:look_*`, etc.).
-- **No moverse:** grupo `npc:frozen` (`minecraft:movement = 0`) y se quita `npc:wander`.
-- **Daño configurable:** el grupo hostil ataca con daño 0; el daño real se aplica por
-  script en `entityHitEntity` con `applyDamage(...)`.
-- **Diálogos:** se guardan en una *dynamic property* y se muestran con `MessageFormData`.
-- **Persistencia:** *dynamic properties* + *component groups*; presets en *dynamic
-  properties* del mundo.
-
----
+## 🔧 Técnico
+- **Geometría y textura por propiedad**: `custom:model` (0..30) elige geometría;
+  `custom:skin` (0..37) elige textura (0–7 humanoide, 8..37 = textura del modelo).
+  El render controller usa `Array.geos[...]` y `Array.skins[...]` con `query.property`.
+- **Comportamientos** por component groups + eventos (tamaño, mirar, movimiento, hostil,
+  inmortal, comerciante).
+- **Daño** configurable aplicado por script en `entityHitEntity`.
+- **Persistencia** con dynamic properties; presets en el mundo.
 
 ## 🎨 Regenerar assets
-
 ```bash
-python3 _tools/gen_textures.py   # 8 skins humanoides + icons
-python3 _tools/gen_models.py     # cube.png + 30 model.json + entity/render controller
+python3 _tools/gen_textures.py   # skins humanoides + icons
+python3 _tools/gen_models.py     # 10 modelos pro + 20 cubos + texturas + entity/render controller
+python3 _tools/gen_ui.py         # texturas del tema pergamino (ui_theme_pack)
 ```
 
 ---
-
-## 🐞 Solución de problemas
-
-| Problema | Solución |
-|---|---|
-| El menú no abre | Requiere **1.21.0+** y el **behavior pack** activo (trae los scripts). |
-| El modelo 3D no cambia | Verifica que el `identifier` del `model.json` sea `geometry.cube_model_N`. |
-| La skin no se ve en un modelo 3D | Las skins son para Humanoide; los modelos usan la textura "cube". |
-| No habla | Activa "Hablar al tocar" en Diálogos y escribe texto. |
-| No se queda quieto | Desactiva "Se mueve / camina" en Comportamiento. |
-
----
-
-Addon creado con **Kiro AI Assistant** · Uso libre para proyectos personales y educativos.
-— *Custom NPC Pro Editor v3.0.0*
+Addon creado con **Kiro AI Assistant** · *Custom NPC Pro Editor v4.0.0*

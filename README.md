@@ -8,10 +8,17 @@
 > opción de grabar a vídeo `.webm` en [`promo/index.html`](promo/index.html).
 > Descarga: [`voxel-forge-promo.zip`](voxel-forge-promo.zip).
 
-NPCs totalmente personalizables mediante un **menú interactivo en el juego**.
+NPCs totalmente personalizables mediante un **menú interactivo en el juego**, con
+**modelos 3D profesionales** (textura independiente por modelo) y **diálogos estilo pergamino**.
 Toca un NPC para **editarlo o hablar con él**; agáchate (sneak) + toca para abrir siempre el editor.
 
-**Versión:** 3.0.0 · **Compatibilidad:** Minecraft Bedrock **1.21.0+** · **Experimentos:** no requeridos
+**Versión:** 4.0.0 · **Compatibilidad:** Minecraft Bedrock **1.21.0+** · **Experimentos:** no requeridos
+
+### 🆕 v4.0.0
+- 🧊 **Textura independiente por modelo**: cada carpeta `model-N` tiene su propio `model.json` **y** `texture.png`.
+- 🏆 **10 modelos 3D profesionales**: Mecha Robot, Caballero, Mago, Golem, Rey Slime, Dron, Pingüino, Zorro, Mech Pesado, Treant (+20 cubos-criatura).
+- 💬 **Diálogos estilo pergamino** (referencia "Village Elder"): nombre del hablante, texto en pergamino, paginado.
+- 📜 **Texture pack opcional** ([`ui_theme_pack.mcpack`](ui_theme_pack.mcpack)) con look de pergamino + marco de piedra para los formularios.
 
 ---
 

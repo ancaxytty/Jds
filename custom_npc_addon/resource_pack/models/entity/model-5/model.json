@@ -3,14 +3,14 @@
   "minecraft:geometry": [
     {
       "description": {
-        "identifier": "geometry.cube_model_5",
-        "texture_width": 64,
-        "texture_height": 32,
-        "visible_bounds_width": 3,
-        "visible_bounds_height": 3.5,
+        "identifier": "geometry.model_5",
+        "texture_width": 58,
+        "texture_height": 60,
+        "visible_bounds_width": 1.875,
+        "visible_bounds_height": 2.0625,
         "visible_bounds_offset": [
           0,
-          1.25,
+          0.53125,
           0
         ]
       },
@@ -25,18 +25,98 @@
           "cubes": [
             {
               "origin": [
-                -8,
+                -7,
                 0,
-                -8
+                -7
               ],
               "size": [
-                16,
-                16,
-                16
+                14,
+                12,
+                14
               ],
               "uv": [
-                0,
-                0
+                1,
+                1
+              ]
+            },
+            {
+              "origin": [
+                -3,
+                2,
+                -3
+              ],
+              "size": [
+                6,
+                6,
+                6
+              ],
+              "uv": [
+                1,
+                28
+              ]
+            },
+            {
+              "origin": [
+                -5,
+                12,
+                -5
+              ],
+              "size": [
+                10,
+                2,
+                10
+              ],
+              "uv": [
+                1,
+                41
+              ]
+            },
+            {
+              "origin": [
+                -5,
+                14,
+                -5
+              ],
+              "size": [
+                2,
+                3,
+                2
+              ],
+              "uv": [
+                42,
+                41
+              ]
+            },
+            {
+              "origin": [
+                3,
+                14,
+                -5
+              ],
+              "size": [
+                2,
+                3,
+                2
+              ],
+              "uv": [
+                1,
+                54
+              ]
+            },
+            {
+              "origin": [
+                -1,
+                14,
+                3
+              ],
+              "size": [
+                2,
+                3,
+                2
+              ],
+              "uv": [
+                10,
+                54
               ]
             }
           ]

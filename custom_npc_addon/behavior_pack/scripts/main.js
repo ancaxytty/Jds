@@ -1,6 +1,6 @@
 // =====================================================================
 //  Custom NPC Pro Editor  -  main entry point
-//  by Kiro  -  v3.0.0
+//  by Kiro  -  v4.0.0
 //
 //  Interact with a Custom NPC to open a full customization menu OR talk:
 //   - sneak + tap  -> always opens the EDITOR
@@ -107,7 +107,7 @@ world.beforeEvents.chatSend.subscribe((ev) => {
 // Startup banner + safety refresh of visuals on load
 // ---------------------------------------------------------------------
 system.run(() => {
-  console.log("[CustomNPC] Pro Editor v3.0.0 cargado correctamente.");
+  console.log("[CustomNPC] Pro Editor v4.0.0 cargado correctamente.");
 });
 
 world.afterEvents.worldInitialize?.subscribe(() => {
@@ -119,7 +119,7 @@ world.afterEvents.worldInitialize?.subscribe(() => {
           const c = getConfig(e);
           e.setProperty("custom:model", c.model);
           e.setProperty("custom:anim", c.anim);
-          e.setProperty("custom:skin", c.model === 0 ? c.skin : 8);
+          e.setProperty("custom:skin", c.model === 0 ? c.skin : 7 + c.model);
         }
       }
     } catch (err) {

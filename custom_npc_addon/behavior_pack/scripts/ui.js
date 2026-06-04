@@ -3,7 +3,7 @@
 // =====================================================================
 import { system } from "@minecraft/server";
 import { ActionFormData, ModalFormData, MessageFormData } from "@minecraft/server-ui";
-import { SKINS, SIZES, ANIMS, MAX_DAMAGE, NPC_ID, modelLabels } from "./config.js";
+import { SKINS, SIZES, ANIMS, MAX_DAMAGE, NPC_ID, modelLabels, MODEL_NAMES } from "./config.js";
 import { forceShow, uiSound, msg } from "./util.js";
 import * as NPC from "./npc.js";
 import * as Presets from "./presets.js";
@@ -18,7 +18,7 @@ function isValid(npc) {
 }
 
 const onOff = (b) => (b ? "§aON" : "§cOFF");
-const modelName = (i) => (i === 0 ? "Humanoide" : "Modelo 3D " + i);
+const modelName = (i) => (i === 0 ? "Humanoide" : (MODEL_NAMES[i - 1] || ("Cubo " + (i - 10))));
 
 // ---------------------------------------------------------------------
 // MAIN MENU
@@ -229,22 +229,31 @@ async function editDialogue(player, npc) {
   back(player, npc);
 }
 
-/** Show the NPC dialogue pages to a player (used on normal interaction). */
+/** Show the NPC dialogue pages to a player, styled like a parchment scroll
+ *  (speaker name as the title, quoted parchment text, page counter, buttons).
+ *  The optional JSON-UI theme pack renders this as a medieval dialogue box. */
 export async function showDialogue(player, npc) {
   const pages = NPC.dialoguePages(npc);
   if (pages.length === 0) return openMainMenu(player, npc);
   const name = (npc.nameTag && npc.nameTag.length ? npc.nameTag : "NPC");
+  uiSound(player, "mob.villager.idle");
   for (let i = 0; i < pages.length; i++) {
     const last = i === pages.length - 1;
-    const form = new MessageFormData()
-      .title(name)
-      .body(pages[i])
-      .button1(last ? "§7Cerrar" : "§aSiguiente")
-      .button2("§8Salir");
+    const body =
+      `§r§8✦ ────────────────────── ✦\n\n` +
+      `§7§o"${pages[i]}"§r\n\n` +
+      `§8✦ ────────────────────── ✦\n` +
+      `§8        Pagina §7${i + 1}§8/§7${pages.length}`;
+    const form = new ActionFormData()
+      .title(`§l§6✦ ${name} ✦`)
+      .body(body)
+      .button(last ? "§l§4✖  Cerrar" : "§l§2❯  Continuar", "textures/ui/dialog_bubble");
+    if (!last) form.button("§8✖  Salir");
     const r = await forceShow(player, form);
     if (!r || r.canceled) return;
-    if (r.selection === 1) return; // "Salir"
     if (last) return;
+    if (r.selection === 1) return; // Salir
+    uiSound(player, "random.click");
   }
 }
 
