@@ -1,0 +1,12 @@
+{
+  "resource_pack_name": "holograms",
+  "texture_name": "atlas.items",
+  "texture_data": {
+    "holo_projector": {
+      "textures": "textures/items/holo_projector"
+    },
+    "holo_wand": {
+      "textures": "textures/items/holo_wand"
+    }
+  }
+}

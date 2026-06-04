@@ -1,0 +1,16 @@
+{
+  "format_version": "1.10.0",
+  "minecraft:client_entity": {
+    "description": {
+      "identifier": "holo:hologram",
+      "materials": { "default": "entity_alphatest" },
+      "textures": { "default": "textures/entity/hologram_blank" },
+      "geometry": { "default": "geometry.hologram_blank" },
+      "render_controllers": [ "controller.render.hologram" ],
+      "spawn_egg": {
+        "base_color": "#36d6ff",
+        "overlay_color": "#b06bff"
+      }
+    }
+  }
+}

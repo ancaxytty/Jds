@@ -1,0 +1,23 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "§b§lHologramas §r§7| Resources",
+    "description": "§7Texturas custom, UI de cuadricula, particulas 3D del addon de Hologramas.\n§8v1.0.0 - by Kiro",
+    "uuid": "7aa256cb-a57c-404f-920a-f538a4e55f17",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 0]
+  },
+  "modules": [
+    {
+      "type": "resources",
+      "uuid": "24281e5b-ba51-45c5-a1a0-43eacbb7daac",
+      "version": [1, 0, 0]
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "1bdd2e38-13c4-43be-899f-0c6f101dd556",
+      "version": [1, 0, 0]
+    }
+  ]
+}
