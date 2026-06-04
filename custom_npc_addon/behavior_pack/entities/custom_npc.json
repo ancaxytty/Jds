@@ -55,11 +55,8 @@
       },
 
       "npc:trader_on": {
-        "minecraft:economy_trade_table": {
-          "display_name": "entity.custom:npc.name",
-          "table": "trading/custom_npc_trades.json",
-          "new_screen": true,
-          "persist_trades": true
+        "minecraft:type_family": {
+          "family": ["custom_npc", "npc", "mob", "trader"]
         }
       },
 

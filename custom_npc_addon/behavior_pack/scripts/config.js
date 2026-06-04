@@ -18,11 +18,37 @@ export const DP = {
   damage: "npc:damage",
   anim: "npc:anim",
   commands: "npc:commands",
+  runOnClick: "npc:run_on_click",
   functions: "npc:functions",
   dialogue: "npc:dialogue",
   talk: "npc:talk",
+  trades: "npc:trades",
   init: "npc:init",
 };
+
+// Common items for the trade editor dropdown (label -> item id)
+export const COMMON_ITEMS = [
+  { label: "Esmeralda", id: "minecraft:emerald" },
+  { label: "Diamante", id: "minecraft:diamond" },
+  { label: "Lingote de oro", id: "minecraft:gold_ingot" },
+  { label: "Lingote de hierro", id: "minecraft:iron_ingot" },
+  { label: "Netherita", id: "minecraft:netherite_ingot" },
+  { label: "Carbon", id: "minecraft:coal" },
+  { label: "Lapislazuli", id: "minecraft:lapis_lazuli" },
+  { label: "Redstone", id: "minecraft:redstone" },
+  { label: "Manzana dorada", id: "minecraft:golden_apple" },
+  { label: "Manzana dorada encantada", id: "minecraft:enchanted_golden_apple" },
+  { label: "Pan", id: "minecraft:bread" },
+  { label: "Espada de diamante", id: "minecraft:diamond_sword" },
+  { label: "Pico de diamante", id: "minecraft:diamond_pickaxe" },
+  { label: "Manzana", id: "minecraft:apple" },
+  { label: "Cofre", id: "minecraft:chest" },
+  { label: "Libro encantado", id: "minecraft:enchanted_book" },
+  { label: "Perla de ender", id: "minecraft:ender_pearl" },
+  { label: "Bloque de diamante", id: "minecraft:diamond_block" },
+  { label: "Bloque de oro", id: "minecraft:gold_block" },
+  { label: "TNT", id: "minecraft:tnt" },
+];
 
 // World dynamic property holding the JSON array of preset names
 export const WORLD_PRESETS_INDEX = "npc:presets_index";
@@ -48,10 +74,14 @@ export const CUBE_SKIN_INDEX = 8;
 // Number of 3D model.json placeholders (model-1 .. model-30)
 export const MODEL_COUNT = 30;
 
-// First 10 are professional multi-cube 3D models; rest are themed cubes.
+// First 10 are professional humanoid/creature 3D models; all 30 are pro.
 export const MODEL_NAMES = [
   "Mecha Robot", "Caballero", "Mago", "Golem", "Rey Slime",
   "Dron", "Pinguino", "Zorro", "Mech Pesado", "Treant",
+  "Dragon", "Esqueleto Rey", "Ninja", "Mago Oscuro", "Robot Dorado",
+  "Oso", "Gato", "Demonio", "Angel", "Pirata",
+  "Astronauta", "Samurai", "Reina Abeja", "Lobo", "Cristal Viviente",
+  "Tortuga", "Hongo", "Fantasma", "Gargola", "Rey Dorado",
 ];
 
 // Per-model texture index inside Array.skins: humanoid skins occupy 0..7,
@@ -64,9 +94,8 @@ export function modelTextureIndex(model) {
 export function modelLabels() {
   const out = ["§aHumanoide §8(usa skin)"];
   for (let i = 1; i <= MODEL_COUNT; i++) {
-    const nm = MODEL_NAMES[i - 1] || ("Cubo Criatura " + (i - 10));
-    const tag = i <= 10 ? "§b★ " : "§3";
-    out.push(`${tag}${nm} §8#${i}`);
+    const nm = MODEL_NAMES[i - 1] || ("Modelo " + i);
+    out.push(`§b★ §f${nm} §8#${i}`);
   }
   return out;
 }
@@ -104,9 +133,11 @@ export const DEFAULTS = {
   damage: 4,
   anim: 0,
   commands: "",
+  runOnClick: false,
   functions: "",
   dialogue: "",
   talk: false,
+  trades: "[]",
 };
 
 export const MAX_DAMAGE = 100;

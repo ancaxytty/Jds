@@ -5,8 +5,8 @@
       "description": {
         "identifier": "geometry.model_6",
         "texture_width": 26,
-        "texture_height": 28,
-        "visible_bounds_width": 1.875,
+        "texture_height": 24,
+        "visible_bounds_width": 1.75,
         "visible_bounds_height": 1.5,
         "visible_bounds_offset": [
           0,
@@ -101,38 +101,6 @@
               "uv": [
                 10,
                 19
-              ]
-            },
-            {
-              "origin": [
-                -7,
-                13,
-                -1
-              ],
-              "size": [
-                1,
-                1,
-                1
-              ],
-              "uv": [
-                19,
-                19
-              ]
-            },
-            {
-              "origin": [
-                6,
-                13,
-                -1
-              ],
-              "size": [
-                1,
-                1,
-                1
-              ],
-              "uv": [
-                1,
-                24
               ]
             }
           ]

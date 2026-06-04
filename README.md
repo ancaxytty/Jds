@@ -14,6 +14,13 @@ Toca un NPC para **editarlo o hablar con él**; agáchate (sneak) + toca para ab
 
 **Versión:** 4.0.0 · **Compatibilidad:** Minecraft Bedrock **1.21.0+** · **Experimentos:** no requeridos
 
+### 🆕 v5.0.0
+- 🏆 **30 modelos 3D profesionales** (multi-cubo) con **textura propia** cada uno.
+- 🎨 Texturas mejoradas (degradados, bordes, detalles) y **pack_icon profesional** nuevo.
+- 🛒 **Intercambios editables (Tienda)**: define items de coste/recompensa; al tocar se abre una pantalla de comercio funcional.
+- ⌨️ Comandos que se ejecutan **al guardar** y/o **al tocar (click)**.
+- ✨ **Partículas 3D custom** (anillo giratorio) alrededor de cada NPC.
+
 ### 🆕 v4.0.0
 - 🧊 **Textura independiente por modelo**: cada carpeta `model-N` tiene su propio `model.json` **y** `texture.png`.
 - 🏆 **10 modelos 3D profesionales**: Mecha Robot, Caballero, Mago, Golem, Rey Slime, Dron, Pingüino, Zorro, Mech Pesado, Treant (+20 cubos-criatura).

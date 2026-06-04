@@ -15,6 +15,7 @@ import {
   modelTextureIndex,
 } from "./config.js";
 import { clamp } from "./util.js";
+import { ItemStack } from "@minecraft/server";
 
 // ---------------------------------------------------------------------
 // Low level getters
@@ -40,9 +41,11 @@ export function getConfig(npc) {
     damage: getDP(npc, DP.damage, DEFAULTS.damage),
     anim: getDP(npc, DP.anim, DEFAULTS.anim),
     commands: getDP(npc, DP.commands, DEFAULTS.commands),
+    runOnClick: getDP(npc, DP.runOnClick, DEFAULTS.runOnClick),
     functions: getDP(npc, DP.functions, DEFAULTS.functions),
     dialogue: getDP(npc, DP.dialogue, DEFAULTS.dialogue),
     talk: getDP(npc, DP.talk, DEFAULTS.talk),
+    trades: getDP(npc, DP.trades, DEFAULTS.trades),
   };
 }
 
@@ -126,6 +129,10 @@ export function setAnim(npc, index) {
 
 export function setCommands(npc, text) {
   npc.setDynamicProperty(DP.commands, (text ?? "").toString().slice(0, 1024));
+}
+
+export function setRunOnClick(npc, on) {
+  npc.setDynamicProperty(DP.runOnClick, !!on);
 }
 
 export function setFunctions(npc, text) {
@@ -215,6 +222,103 @@ export function dialoguePages(npc) {
 }
 
 // ---------------------------------------------------------------------
+// Trades (editable, functional, vanilla-like)
+//   A trade = { wantId, wantQty, want2Id, want2Qty, giveId, giveQty }
+//   Stored as JSON in DP.trades.
+// ---------------------------------------------------------------------
+
+export function getTrades(npc) {
+  try {
+    const arr = JSON.parse(getDP(npc, DP.trades, "[]"));
+    return Array.isArray(arr) ? arr : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+export function setTrades(npc, arr) {
+  npc.setDynamicProperty(DP.trades, JSON.stringify(arr ?? []).slice(0, 8000));
+}
+
+export function addTrade(npc, trade) {
+  const arr = getTrades(npc);
+  arr.push(trade);
+  setTrades(npc, arr);
+}
+
+export function updateTrade(npc, index, trade) {
+  const arr = getTrades(npc);
+  if (index >= 0 && index < arr.length) arr[index] = trade;
+  setTrades(npc, arr);
+}
+
+export function removeTrade(npc, index) {
+  const arr = getTrades(npc);
+  if (index >= 0 && index < arr.length) arr.splice(index, 1);
+  setTrades(npc, arr);
+}
+
+function countItem(container, id) {
+  let total = 0;
+  for (let i = 0; i < container.size; i++) {
+    const it = container.getItem(i);
+    if (it && it.typeId === id) total += it.amount;
+  }
+  return total;
+}
+
+function removeItem(container, id, qty) {
+  let remaining = qty;
+  for (let i = 0; i < container.size && remaining > 0; i++) {
+    const it = container.getItem(i);
+    if (it && it.typeId === id) {
+      if (it.amount > remaining) {
+        it.amount -= remaining;
+        container.setItem(i, it);
+        remaining = 0;
+      } else {
+        remaining -= it.amount;
+        container.setItem(i, undefined);
+      }
+    }
+  }
+  return remaining === 0;
+}
+
+/** Attempt a trade for a player. Returns {ok, msg}. */
+export function tryTrade(player, npc, index) {
+  const t = getTrades(npc)[index];
+  if (!t) return { ok: false, msg: "Intercambio no valido." };
+  const inv = player.getComponent("minecraft:inventory");
+  if (!inv || !inv.container) return { ok: false, msg: "Sin inventario." };
+  const c = inv.container;
+
+  const needs = [{ id: t.wantId, qty: t.wantQty }];
+  if (t.want2Id && t.want2Qty > 0) needs.push({ id: t.want2Id, qty: t.want2Qty });
+
+  for (const n of needs) {
+    if (countItem(c, n.id) < n.qty) {
+      return { ok: false, msg: "Te faltan items para este intercambio." };
+    }
+  }
+  // try to give first (validate item id by constructing it)
+  let giveStack;
+  try {
+    giveStack = new ItemStack(t.giveId, t.giveQty);
+  } catch (e) {
+    return { ok: false, msg: "Item de recompensa invalido: " + t.giveId };
+  }
+  // consume
+  for (const n of needs) removeItem(c, n.id, n.qty);
+  // give (drop overflow at player)
+  const leftover = c.addItem(giveStack);
+  if (leftover) {
+    try { player.dimension.spawnItem(leftover, player.location); } catch (e) {}
+  }
+  return { ok: true, msg: "Intercambio realizado!" };
+}
+
+// ---------------------------------------------------------------------
 // Bulk apply (used by presets / first spawn)
 // ---------------------------------------------------------------------
 
@@ -231,9 +335,11 @@ export function applyConfig(npc, cfg) {
   if (cfg.damage !== undefined) setDamage(npc, cfg.damage);
   if (cfg.anim !== undefined) setAnim(npc, cfg.anim);
   if (cfg.commands !== undefined) setCommands(npc, cfg.commands);
+  if (cfg.runOnClick !== undefined) setRunOnClick(npc, cfg.runOnClick);
   if (cfg.functions !== undefined) setFunctions(npc, cfg.functions);
   if (cfg.dialogue !== undefined) setDialogue(npc, cfg.dialogue);
   if (cfg.talk !== undefined) setTalk(npc, cfg.talk);
+  if (cfg.trades !== undefined) npc.setDynamicProperty(DP.trades, typeof cfg.trades === "string" ? cfg.trades : JSON.stringify(cfg.trades));
 }
 
 /** Apply defaults the first time an NPC is edited / spawned. */

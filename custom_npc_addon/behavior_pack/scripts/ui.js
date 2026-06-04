@@ -3,7 +3,7 @@
 // =====================================================================
 import { system } from "@minecraft/server";
 import { ActionFormData, ModalFormData, MessageFormData } from "@minecraft/server-ui";
-import { SKINS, SIZES, ANIMS, MAX_DAMAGE, NPC_ID, modelLabels, MODEL_NAMES } from "./config.js";
+import { SKINS, SIZES, ANIMS, MAX_DAMAGE, NPC_ID, modelLabels, MODEL_NAMES, COMMON_ITEMS } from "./config.js";
 import { forceShow, uiSound, msg } from "./util.js";
 import * as NPC from "./npc.js";
 import * as Presets from "./presets.js";
@@ -45,12 +45,13 @@ export async function openMainMenu(player, npc) {
     .body(body)
     .button("§l§eNombre", "textures/items/name_tag")
     .button("§l§bApariencia / Skin", "textures/items/leather")
-    .button("§l§3Modelos 3D", "textures/blocks/crafting_table_front")
+    .button("§l§3Modelos 3D §8(30)", "textures/blocks/crafting_table_front")
     .button("§l§dTamano", "textures/items/blaze_powder")
     .button("§l§5Animacion", "textures/items/firework_star")
     .button("§l§aComportamiento", "textures/items/spyglass")
     .button("§l§cDano", "textures/items/diamond_sword")
     .button("§l§6Dialogos", "textures/items/book_normal")
+    .button("§l§2Intercambios §8(Tienda)", "textures/items/emerald")
     .button("§l§6Etiquetas (Tags)", "textures/items/paper")
     .button("§l§eComandos", "textures/items/book_writable")
     .button("§l§9Funciones", "textures/items/book_enchanted")
@@ -69,11 +70,12 @@ export async function openMainMenu(player, npc) {
     case 5: return editBehavior(player, npc);
     case 6: return editDamage(player, npc);
     case 7: return editDialogue(player, npc);
-    case 8: return tagsMenu(player, npc);
-    case 9: return editCommands(player, npc);
-    case 10: return editFunctions(player, npc);
-    case 11: return presetsMenu(player, npc);
-    case 12: return actionsMenu(player, npc);
+    case 8: return tradesEditor(player, npc);
+    case 9: return tagsMenu(player, npc);
+    case 10: return editCommands(player, npc);
+    case 11: return editFunctions(player, npc);
+    case 12: return presetsMenu(player, npc);
+    case 13: return actionsMenu(player, npc);
   }
 }
 
@@ -122,8 +124,8 @@ async function editModel(player, npc) {
     .title("§l§3Modelos 3D")
     .body(
       `§7Modelo actual: §f${modelName(c.model)}\n` +
-      `§7Elige Humanoide o uno de los 30 modelos 3D.\n` +
-      `§8Reemplaza models/entity/model-N/model.json con tu modelo de Blockbench (manten el identificador geometry.cube_model_N).`
+      `§7Elige Humanoide o uno de los 30 modelos 3D profesionales.\n` +
+      `§8Cada modelo usa su propia textura. Para cambiarlo: reemplaza\n§8models/entity/model-N/model.json y texture.png (identifier geometry.model_N).`
     );
   for (const l of labels) form.button(l);
 
@@ -186,7 +188,7 @@ async function editBehavior(player, npc) {
   NPC.setGod(npc, god);
   NPC.setTrader(npc, trader);
   uiSound(player);
-  if (trader) msg(player, "§eTienda activada: §7toca normal = comerciar, agachate (sneak) + toca = editor.");
+  if (trader) msg(player, "§eTienda activada: §7toca el NPC = abrir tienda. Define items en §fIntercambios§7. Sneak + toca = editor.");
   back(player, npc);
 }
 
@@ -258,6 +260,133 @@ export async function showDialogue(player, npc) {
 }
 
 // ---------------------------------------------------------------------
+// TRADES (editable shop + vanilla-like trade screen)
+// ---------------------------------------------------------------------
+function itemLabel(id) {
+  const found = COMMON_ITEMS.find((x) => x.id === id);
+  if (found) return found.label;
+  return (id || "?").replace("minecraft:", "");
+}
+function itemIndex(id) {
+  const i = COMMON_ITEMS.findIndex((x) => x.id === id);
+  return i < 0 ? 0 : i;
+}
+function tradeSummary(t) {
+  let cost = `§f${t.wantQty}x §e${itemLabel(t.wantId)}`;
+  if (t.want2Id && t.want2Qty > 0) cost += ` §7+ §f${t.want2Qty}x §e${itemLabel(t.want2Id)}`;
+  return `${cost} §7➜ §f${t.giveQty}x §a${itemLabel(t.giveId)}`;
+}
+
+async function tradesEditor(player, npc) {
+  const trades = NPC.getTrades(npc);
+  const c = NPC.getConfig(npc);
+  const form = new ActionFormData()
+    .title("§l§2Intercambios (Tienda)")
+    .body(
+      `§7Comercio: ${onOff(c.trader)} §8(actívalo en Comportamiento)\n` +
+      `§7Define los intercambios. Al tocar el NPC (con tienda activa) se abrira la tienda.\n` +
+      (trades.length ? "§7Toca un intercambio para editar/eliminar." : "§8Aun no hay intercambios.")
+    )
+    .button("§a+ Anadir intercambio", "textures/items/emerald");
+  for (const t of trades) form.button(tradeSummary(t));
+  form.button("§b👁 Vista previa de la tienda", "textures/items/gold_ingot");
+  form.button("§7Volver");
+
+  const r = await forceShow(player, form);
+  if (!r || r.canceled) return back(player, npc);
+  if (r.selection === 0) return editTradeForm(player, npc, null);
+  if (r.selection === trades.length + 1) {
+    if (!trades.length) { msg(player, "§7No hay intercambios para mostrar."); return system.runTimeout(() => tradesEditor(player, npc), 2); }
+    return showTrades(player, npc, true);
+  }
+  if (r.selection === trades.length + 2) return back(player, npc);
+  return tradeItemForm(player, npc, r.selection - 1);
+}
+
+async function tradeItemForm(player, npc, index) {
+  const t = NPC.getTrades(npc)[index];
+  if (!t) return system.runTimeout(() => tradesEditor(player, npc), 2);
+  const form = new ActionFormData()
+    .title("§l§2Intercambio #" + (index + 1))
+    .body("§7" + tradeSummary(t))
+    .button("§eEditar")
+    .button("§cEliminar")
+    .button("§7Volver");
+  const r = await forceShow(player, form);
+  if (!r || r.canceled) return system.runTimeout(() => tradesEditor(player, npc), 2);
+  if (r.selection === 0) return editTradeForm(player, npc, index);
+  if (r.selection === 1) {
+    NPC.removeTrade(npc, index);
+    msg(player, "§cIntercambio eliminado.");
+    uiSound(player, "mob.villager.no");
+  }
+  system.runTimeout(() => tradesEditor(player, npc), 2);
+}
+
+async function editTradeForm(player, npc, index) {
+  const t = index === null
+    ? { wantId: "minecraft:emerald", wantQty: 1, want2Id: null, want2Qty: 0, giveId: "minecraft:diamond", giveQty: 1 }
+    : NPC.getTrades(npc)[index];
+  const ids = COMMON_ITEMS.map((x) => x.label);
+  const form = new ModalFormData()
+    .title(index === null ? "§l§2Nuevo intercambio" : "§l§2Editar intercambio")
+    .dropdown("§7Item que pide", ids, itemIndex(t.wantId))
+    .textField("§8ID personalizado del item pedido (opcional)", "minecraft:...", "")
+    .slider("§7Cantidad pedida", 1, 64, 1, t.wantQty || 1)
+    .toggle("§7Pedir un 2º item", !!(t.want2Id && t.want2Qty > 0))
+    .dropdown("§72º item (si activado)", ids, itemIndex(t.want2Id))
+    .slider("§7Cantidad 2º item", 1, 64, 1, t.want2Qty || 1)
+    .dropdown("§aItem que entrega (recompensa)", ids, itemIndex(t.giveId))
+    .textField("§8ID personalizado de la recompensa (opcional)", "minecraft:...", "")
+    .slider("§aCantidad recompensa", 1, 64, 1, t.giveQty || 1);
+  const r = await forceShow(player, form);
+  if (!r || r.canceled) return system.runTimeout(() => tradesEditor(player, npc), 2);
+  const [wSel, wCustom, wQty, w2on, w2Sel, w2Qty, gSel, gCustom, gQty] = r.formValues;
+  const wantId = (wCustom || "").trim() || COMMON_ITEMS[wSel].id;
+  const giveId = (gCustom || "").trim() || COMMON_ITEMS[gSel].id;
+  const trade = {
+    wantId, wantQty: wQty,
+    want2Id: w2on ? COMMON_ITEMS[w2Sel].id : null,
+    want2Qty: w2on ? w2Qty : 0,
+    giveId, giveQty: gQty,
+  };
+  if (index === null) NPC.addTrade(npc, trade);
+  else NPC.updateTrade(npc, index, trade);
+  msg(player, "§aIntercambio guardado: §7" + tradeSummary(trade));
+  uiSound(player);
+  system.runTimeout(() => tradesEditor(player, npc), 2);
+}
+
+/** Vanilla-like shop screen for players. preview=true returns to editor. */
+export async function showTrades(player, npc, preview = false) {
+  const trades = NPC.getTrades(npc);
+  const name = (npc.nameTag && npc.nameTag.length ? npc.nameTag : "Mercader");
+  if (!trades.length) {
+    msg(player, "§7Este mercader no tiene nada que ofrecer.");
+    return preview ? system.runTimeout(() => tradesEditor(player, npc), 2) : undefined;
+  }
+  const form = new ActionFormData()
+    .title("§l§6⚖ " + name)
+    .body("§7Elige un intercambio:\n§8(coste ➜ recompensa)");
+  for (const t of trades) form.button(tradeSummary(t), "textures/items/emerald");
+  if (preview) form.button("§7Volver al editor");
+  const r = await forceShow(player, form);
+  if (!r || r.canceled) return preview ? system.runTimeout(() => tradesEditor(player, npc), 2) : undefined;
+  if (preview && r.selection === trades.length) return system.runTimeout(() => tradesEditor(player, npc), 2);
+
+  const res = NPC.tryTrade(player, npc, r.selection);
+  if (res.ok) {
+    msg(player, "§a✔ " + res.msg);
+    uiSound(player, "random.orb");
+  } else {
+    msg(player, "§c✘ " + res.msg);
+    uiSound(player, "note.bass");
+  }
+  // reopen shop for more trades
+  system.runTimeout(() => showTrades(player, npc, preview), 3);
+}
+
+// ---------------------------------------------------------------------
 // TAGS
 // ---------------------------------------------------------------------
 async function tagsMenu(player, npc) {
@@ -302,18 +431,21 @@ async function editCommands(player, npc) {
       "say Hola!; particle minecraft:heart_particle ~~1~",
       c.commands
     )
-    .toggle("§7Ejecutar ahora", true)
-    .toggle("§7Guardar para reutilizar", true);
+    .toggle("§7Ejecutar ahora (al guardar)", true)
+    .toggle("§7Guardar para reutilizar", true)
+    .toggle("§7Ejecutar al tocar el NPC (click)", c.runOnClick);
   const r = await forceShow(player, form);
   if (!r || r.canceled) return back(player, npc);
-  const [text, runNow, save] = r.formValues;
+  const [text, runNow, save, onClick] = r.formValues;
   if (save) NPC.setCommands(npc, text);
+  NPC.setRunOnClick(npc, onClick);
   if (runNow) {
     const res = NPC.runCommands(npc, text);
     const ok = res.filter((x) => x.ok).length;
     msg(player, `§aComandos ejecutados: §f${ok}/${res.length}`);
     for (const e of res.filter((x) => !x.ok)) msg(player, `§c  fallo: §7${e.cmd}`);
   }
+  if (onClick) msg(player, "§eLos comandos se ejecutaran cada vez que un jugador toque el NPC.");
   uiSound(player);
   back(player, npc);
 }
