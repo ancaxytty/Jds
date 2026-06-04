@@ -1,5 +1,13 @@
 # Custom NPC Pro Editor — Minecraft Bedrock Addon
 
+<p align="center">
+  <img src="promo/voxel_forge_promo.gif" alt="Vídeo promocional animado" width="640" />
+</p>
+
+> 🎬 **Vídeo promocional animado** arriba (GIF). Versión HD en HTML5 con sonido y
+> opción de grabar a vídeo `.webm` en [`promo/index.html`](promo/index.html).
+> Descarga: [`voxel-forge-promo.zip`](voxel-forge-promo.zip).
+
 NPCs totalmente personalizables mediante un **menú interactivo en el juego**.
 Toca un NPC para **editarlo o hablar con él**; agáchate (sneak) + toca para abrir siempre el editor.
 

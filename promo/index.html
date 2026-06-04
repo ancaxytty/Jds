@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Voxel Forge · Vídeo promocional</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { height: 100%; background: #05070d; color: #e6edf6;
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; overflow: hidden; }
+  .stage { width: 100vw; height: 100vh; display: grid; place-items: center; position: relative; }
+  canvas { width: min(100vw, 177.78vh); height: min(56.25vw, 100vh);
+    background: #05070d; box-shadow: 0 30px 90px rgba(0,0,0,.6); border-radius: 6px; }
+  .bar { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
+    display: flex; gap: 10px; align-items: center; z-index: 10;
+    background: rgba(15,23,42,.7); backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,.12); padding: 10px 14px; border-radius: 14px;
+    opacity: .35; transition: opacity .25s; }
+  .bar:hover { opacity: 1; }
+  button { cursor: pointer; border: none; font-weight: 700; font-size: 13px;
+    padding: 9px 14px; border-radius: 10px; color: #06210f;
+    background: linear-gradient(135deg, #4ade80, #38bdf8); transition: transform .15s, box-shadow .15s; }
+  button:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(56,189,248,.4); }
+  button.alt { background: linear-gradient(135deg, #a78bfa, #6366f1); color: #fff; }
+  button.rec { background: linear-gradient(135deg, #f87171, #ef4444); color: #fff; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: #fff; display: inline-block;
+    margin-right: 6px; animation: blink 1s steps(2) infinite; vertical-align: middle; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .hint { position: fixed; top: 14px; left: 50%; transform: translateX(-50%);
+    font-size: 12px; color: #8b97a8; z-index: 10; text-align: center; }
+</style>
+</head>
+<body>
+<div class="hint">Vídeo promocional animado · se reproduce en bucle · usa <b>Grabar</b> para descargar el vídeo (.webm)</div>
+<div class="stage">
+  <canvas id="c" width="1280" height="720"></canvas>
+</div>
+<div class="bar">
+  <button id="play">⏸ Pausa</button>
+  <button id="restart" class="alt">↻ Reiniciar</button>
+  <button id="mute" class="alt">🔇 Silencio</button>
+  <button id="rec" class="rec">● Grabar</button>
+  <button id="full" class="alt">⛶ Pantalla completa</button>
+  <span id="time" style="font-size:12px;color:#8b97a8;min-width:80px;text-align:center"></span>
+</div>
+
+<script>
+const cv = document.getElementById('c');
+const ctx = cv.getContext('2d');
+const W = cv.width, H = cv.height;
+
+// ----------------------------------------------------------- helpers
+const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+const easeOut = t => 1-Math.pow(1-t,3);
+const sat = t => clamp(t,0,1);
+function win(time, start, dur){ return sat((time-start)/dur); }
+function band(time, inS, holdS, outS, t0){
+  const a = win(time, t0, inS);
+  const b = 1 - win(time, t0+inS+holdS, outS);
+  return clamp(Math.min(a,b),0,1);
+}
+
+// ----------------------------------------------------------- particles
+const stars = Array.from({length:140}, ()=>({
+  x: Math.random()*W, y: Math.random()*H, z: Math.random()*1+0.2, r: Math.random()*1.8+0.3
+}));
+const motes = Array.from({length:46}, ()=>({
+  x: Math.random()*W, y: Math.random()*H,
+  vx:(Math.random()-.5)*0.25, vy:(Math.random()-.5)*0.25,
+  r: Math.random()*22+6, hue: Math.random()
+}));
+
+function drawBackground(time){
+  const g = ctx.createLinearGradient(0,0,W,H);
+  g.addColorStop(0,'#0a1430'); g.addColorStop(.5,'#0c1226'); g.addColorStop(1,'#140a2a');
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H);
+  for(const m of motes){
+    m.x+=m.vx; m.y+=m.vy;
+    if(m.x<-60)m.x=W+60; if(m.x>W+60)m.x=-60;
+    if(m.y<-60)m.y=H+60; if(m.y>H+60)m.y=-60;
+    const col = m.hue<.33? '74,222,128' : m.hue<.66? '56,189,248':'167,139,250';
+    const rg = ctx.createRadialGradient(m.x,m.y,0,m.x,m.y,m.r*4);
+    rg.addColorStop(0,`rgba(${col},0.12)`); rg.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle = rg; ctx.beginPath(); ctx.arc(m.x,m.y,m.r*4,0,7); ctx.fill();
+  }
+  for(const s of stars){
+    const tw = 0.5+0.5*Math.sin(time*2 + s.x);
+    ctx.fillStyle = `rgba(220,235,255,${0.25*s.z+0.25*tw})`;
+    ctx.fillRect(s.x, s.y, s.r, s.r);
+  }
+}
+
+// ----------------------------------------------------------- 3D voxel cube
+function project(p, ay, ax, scale, ox, oy){
+  let {x,y,z}=p;
+  let cx=Math.cos(ay), sx=Math.sin(ay);
+  let x1=x*cx - z*sx, z1=x*sx + z*cx, y1=y;
+  let cb=Math.cos(ax), sb=Math.sin(ax);
+  let y2=y1*cb - z1*sb, z2=y1*sb + z1*cb, x2=x1;
+  return { sx: ox + x2*scale, sy: oy - y2*scale, depth: z2 };
+}
+function shade(hex, f){
+  const n=parseInt(hex.slice(1),16);
+  let r=(n>>16)&255,g=(n>>8)&255,b=n&255;
+  r=clamp(r*f|0,0,255);g=clamp(g*f|0,0,255);b=clamp(b*f|0,0,255);
+  return `rgb(${r},${g},${b})`;
+}
+function buildVoxels(){
+  const v=[];
+  const colors=['#4ade80','#38bdf8','#a78bfa','#22c55e','#0ea5e9'];
+  const R=2.4;
+  for(let x=-2;x<=2;x++)for(let y=-2;y<=2;y++)for(let z=-2;z<=2;z++){
+    if(Math.sqrt(x*x+y*y+z*z)<=R) v.push({x,y,z, c: colors[(Math.abs(x+y*2+z*3))%colors.length]});
+  }
+  return v;
+}
+const VOX = buildVoxels();
+
+function drawVoxelCube(time, ox, oy, scale, assemble){
+  const ay = time*0.8, ax = -0.5;
+  const faces=[];
+  for(const vx of VOX){
+    let off = 1-easeOut(assemble);
+    const jx = vx.x*(1+off*3) + off*Math.sin(vx.y*3+vx.z)*4;
+    const jy = vx.y*(1+off*3) + off*Math.cos(vx.x*2+vx.z)*4;
+    const jz = vx.z*(1+off*3);
+    const h=0.5;
+    const c=[
+      {x:jx-h,y:jy-h,z:jz-h},{x:jx+h,y:jy-h,z:jz-h},
+      {x:jx+h,y:jy+h,z:jz-h},{x:jx-h,y:jy+h,z:jz-h},
+      {x:jx-h,y:jy-h,z:jz+h},{x:jx+h,y:jy-h,z:jz+h},
+      {x:jx+h,y:jy+h,z:jz+h},{x:jx-h,y:jy+h,z:jz+h},
+    ].map(p=>project(p,ay,ax,scale,ox,oy));
+    const cd=(c[0].depth+c[6].depth)/2;
+    faces.push({pts:[c[3],c[2],c[6],c[7]], c:shade(vx.c,1.25), d:cd+0.4});
+    faces.push({pts:[c[1],c[2],c[6],c[5]], c:shade(vx.c,0.85), d:cd+0.2});
+    faces.push({pts:[c[4],c[5],c[6],c[7]], c:shade(vx.c,1.0),  d:cd});
+  }
+  faces.sort((a,b)=>a.d-b.d);
+  for(const f of faces){
+    ctx.beginPath();
+    ctx.moveTo(f.pts[0].sx,f.pts[0].sy);
+    for(let i=1;i<4;i++) ctx.lineTo(f.pts[i].sx,f.pts[i].sy);
+    ctx.closePath();
+    ctx.fillStyle=f.c; ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.18)'; ctx.lineWidth=1; ctx.stroke();
+  }
+}
+
+// ----------------------------------------------------------- text helpers
+function text(str, x, y, size, color, opacity, weight='800', align='center'){
+  if(opacity<=0) return;
+  ctx.save(); ctx.globalAlpha=opacity;
+  ctx.font=`${weight} ${size}px "Segoe UI", system-ui, sans-serif`;
+  ctx.textAlign=align; ctx.textBaseline='middle';
+  ctx.fillStyle=color;
+  ctx.shadowColor='rgba(56,189,248,0.5)'; ctx.shadowBlur=size*0.35;
+  ctx.fillText(str,x,y); ctx.restore();
+}
+function gradText(str,x,y,size,opacity){
+  if(opacity<=0)return;
+  ctx.save(); ctx.globalAlpha=opacity;
+  ctx.font=`800 ${size}px "Segoe UI", system-ui, sans-serif`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  const half=Math.max(size*str.length*0.28, size);
+  const g=ctx.createLinearGradient(x-half,0,x+half,0);
+  g.addColorStop(0,'#4ade80');g.addColorStop(.5,'#38bdf8');g.addColorStop(1,'#a78bfa');
+  ctx.fillStyle=g; ctx.shadowColor='rgba(56,189,248,0.55)'; ctx.shadowBlur=size*0.4;
+  ctx.fillText(str,x,y); ctx.restore();
+}
+function roundRect(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
+}
+function pill(label,x,y,opacity,color){
+  if(opacity<=0)return;
+  ctx.save(); ctx.globalAlpha=opacity;
+  ctx.font='700 26px "Segoe UI", sans-serif'; ctx.textBaseline='middle';
+  const w=ctx.measureText(label).width+38, h=46;
+  ctx.translate(x,y);
+  roundRect(-w/2,-h/2,w,h,h/2);
+  ctx.fillStyle='rgba(255,255,255,0.08)'; ctx.fill();
+  ctx.lineWidth=2; ctx.strokeStyle=color; ctx.stroke();
+  ctx.fillStyle='#eef4ff'; ctx.textAlign='center'; ctx.fillText(label,0,1);
+  ctx.restore();
+}
+
+// ----------------------------------------------------------- TIMELINE
+const DURATION = 16.0;
+
+function sceneIntro(t){
+  const assemble = win(t,0.2,2.2);
+  drawVoxelCube(t, W/2, H*0.42, 46, assemble);
+  gradText('VOXEL FORGE', W/2, H*0.78, 92, band(t,0.6,10,0.6,1.8));
+  text('3D  →  MINECRAFT BEDROCK', W/2, H*0.88, 30, '#93a3bb', band(t,0.6,10,0.6,2.4));
+}
+function sceneTagline(t, t0){
+  drawVoxelCube(t, W/2, H*0.30, 26, 1);
+  const o1=band(t,0.5,2.0,0.5,t0);
+  text('Convierte tus modelos 3D', W/2, H*0.55, 56, '#eef4ff', o1);
+  gradText('en geometría de Minecraft', W/2, H*0.66, 56, o1);
+  text('.geo.json + textura · listo para Blockbench', W/2, H*0.77, 28, '#93a3bb', band(t,0.5,1.6,0.5,t0+0.4));
+}
+function sceneFormats(t, t0){
+  drawVoxelCube(t, W*0.5, H*0.24, 20, 1);
+  text('+ de 10 formatos compatibles', W/2, H*0.44, 40, '#eef4ff', band(t,0.4,3.2,0.5,t0));
+  const fmts=['GLB','GLTF','OBJ','FBX','STL','PLY','DAE','3MF','VOX','WRL','AMF','USDZ'];
+  const cols=['#4ade80','#38bdf8','#a78bfa'];
+  const perRow=6, gapX=180, gapY=70;
+  for(let i=0;i<fmts.length;i++){
+    const row=Math.floor(i/perRow), col=i%perRow;
+    const x=W/2 + (col-(perRow-1)/2)*gapX;
+    const y=H*0.58 + row*gapY;
+    const op=band(t,0.3,3.0,0.4, t0+0.4 + i*0.08);
+    const slide=(1-easeOut(win(t,t0+0.4+i*0.08,0.4)))*30;
+    pill(fmts[i], x, y+slide, op, cols[i%3]);
+  }
+}
+function sceneNPC(t, t0){
+  drawVoxelCube(t, W*0.80, H*0.5, 30, 1);
+  ctx.save(); ctx.globalAlpha=band(t,0.4,3.0,0.5,t0);
+  gradText('Custom NPC Pro', W*0.34, H*0.26, 54, 1);
+  ctx.restore();
+  const feats=['30 modelos 3D intercambiables','8 skins · 6 tamaños · animaciones',
+    'Diálogos custom · comandos · funciones','Editor en el juego · presets'];
+  for(let i=0;i<feats.length;i++){
+    const op=band(t,0.3,3.0,0.4,t0+0.5+i*0.25);
+    text('▸  '+feats[i], W*0.09, H*0.42+i*58, 30, '#cfe0f5', op, '600', 'left');
+  }
+}
+function sceneCTA(t, t0){
+  drawVoxelCube(t*1.6, W/2, H*0.40, 50, 1);
+  gradText('Pruébalo ahora', W/2, H*0.74, 70, band(t,0.5,10,0.0,t0));
+  text('GitHub · ancaxytty/Jds', W/2, H*0.85, 32, '#93a3bb', band(t,0.5,10,0,t0+0.3));
+  const fl=1-win(t,t0,0.5);
+  if(fl>0){ ctx.fillStyle=`rgba(255,255,255,${fl*0.35})`; ctx.fillRect(0,0,W,H); }
+}
+
+function render(time){
+  const t = time % DURATION;
+  drawBackground(time);
+  if(t<4) sceneIntro(t);
+  else if(t<6.5) sceneTagline(t,4);
+  else if(t<10) sceneFormats(t,6.5);
+  else if(t<13) sceneNPC(t,10);
+  else sceneCTA(t,13);
+  ctx.fillStyle='rgba(255,255,255,0.10)'; ctx.fillRect(0,H-4,W,4);
+  ctx.fillStyle='#38bdf8'; ctx.fillRect(0,H-4,W*(t/DURATION),4);
+  text('🧊 Voxel Forge', W-150, 40, 22, 'rgba(255,255,255,0.5)', 1, '700');
+}
+
+// ----------------------------------------------------------- loop / controls
+let playing=true, startTime=performance.now(), pausedAt=0;
+function frame(now){
+  if(playing){
+    const time=(now-startTime)/1000;
+    render(time);
+    document.getElementById('time').textContent=(time%DURATION).toFixed(1)+'s / '+DURATION+'s';
+  }
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+document.getElementById('play').onclick=function(){
+  playing=!playing;
+  this.textContent=playing?'⏸ Pausa':'▶ Reproducir';
+  if(playing) startTime=performance.now()-pausedAt*1000;
+  else pausedAt=((performance.now()-startTime)/1000)%DURATION;
+};
+document.getElementById('restart').onclick=()=>{ startTime=performance.now(); pausedAt=0; playing=true;
+  document.getElementById('play').textContent='⏸ Pausa'; };
+document.getElementById('full').onclick=()=>{ if(!document.fullscreenElement) cv.requestFullscreen?.(); else document.exitFullscreen?.(); };
+
+// ----------------------------------------------------------- audio (generated synth)
+let audioOn=false, actx=null, masterGain=null, audioDest=null;
+function startAudio(){
+  if(actx) return;
+  actx=new (window.AudioContext||window.webkitAudioContext)();
+  masterGain=actx.createGain(); masterGain.gain.value=0.0; masterGain.connect(actx.destination);
+  audioDest=actx.createMediaStreamDestination(); masterGain.connect(audioDest);
+  const notes=[220,277.18,329.63,440,329.63,277.18];
+  let i=0;
+  (function tick(){
+    if(!actx) return;
+    const o=actx.createOscillator(), g=actx.createGain();
+    o.type='triangle'; o.frequency.value=notes[i%notes.length];
+    const o2=actx.createOscillator(); o2.type='sine'; o2.frequency.value=notes[i%notes.length]/2;
+    o.connect(g); o2.connect(g); g.connect(masterGain);
+    const now=actx.currentTime;
+    g.gain.setValueAtTime(0,now); g.gain.linearRampToValueAtTime(0.18,now+0.05);
+    g.gain.exponentialRampToValueAtTime(0.001,now+0.6);
+    o.start(now); o2.start(now); o.stop(now+0.65); o2.stop(now+0.65);
+    i++; setTimeout(tick, 380);
+  })();
+}
+document.getElementById('mute').onclick=function(){
+  startAudio();
+  audioOn=!audioOn;
+  if(masterGain) masterGain.gain.linearRampToValueAtTime(audioOn?0.5:0.0, actx.currentTime+0.2);
+  this.textContent=audioOn?'🔊 Sonido':'🔇 Silencio';
+};
+
+// ----------------------------------------------------------- recording (canvas -> webm)
+let recorder=null, chunks=[];
+document.getElementById('rec').onclick=function(){
+  if(recorder && recorder.state==='recording'){ recorder.stop(); return; }
+  startAudio();
+  const stream=cv.captureStream(30);
+  if(audioDest){ for(const tr of audioDest.stream.getAudioTracks()) stream.addTrack(tr); }
+  let mime='video/webm;codecs=vp9,opus';
+  if(!MediaRecorder.isTypeSupported(mime)) mime='video/webm;codecs=vp8,opus';
+  if(!MediaRecorder.isTypeSupported(mime)) mime='video/webm';
+  chunks=[]; recorder=new MediaRecorder(stream,{mimeType:mime, videoBitsPerSecond:6000000});
+  recorder.ondataavailable=e=>{ if(e.data.size) chunks.push(e.data); };
+  const btn=this;
+  recorder.onstop=()=>{
+    const blob=new Blob(chunks,{type:'video/webm'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a'); a.href=url; a.download='voxel_forge_promo.webm'; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url),4000);
+    btn.textContent='● Grabar';
+  };
+  startTime=performance.now(); pausedAt=0; playing=true;
+  recorder.start();
+  btn.innerHTML='<span class="dot"></span>Detener';
+  setTimeout(()=>{ if(recorder && recorder.state==='recording') recorder.stop(); }, (DURATION+0.2)*1000);
+};
+</script>
+</body>
+</html>
