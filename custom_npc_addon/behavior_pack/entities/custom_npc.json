@@ -9,7 +9,13 @@
       "properties": {
         "custom:skin": {
           "type": "int",
-          "range": [0, 7],
+          "range": [0, 8],
+          "default": 0,
+          "client_sync": true
+        },
+        "custom:model": {
+          "type": "int",
+          "range": [0, 30],
           "default": 0,
           "client_sync": true
         },
@@ -30,13 +36,22 @@
       "npc:size_xl": { "minecraft:scale": { "value": 2.0 } },
       "npc:size_xxl":{ "minecraft:scale": { "value": 3.0 } },
 
+      "npc:wander": {
+        "minecraft:behavior.random_stroll": {
+          "priority": 6,
+          "speed_multiplier": 0.6
+        }
+      },
+      "npc:frozen": {
+        "minecraft:movement": { "value": 0.0 }
+      },
+
       "npc:look_on": {
         "minecraft:behavior.look_at_player": {
           "priority": 7,
           "look_distance": 8.0,
           "probability": 0.9
-        },
-        "minecraft:behavior.random_look_around": { "priority": 9 }
+        }
       },
 
       "npc:trader_on": {
@@ -148,10 +163,6 @@
         ]
       },
       "minecraft:behavior.float": { "priority": 0 },
-      "minecraft:behavior.random_stroll": {
-        "priority": 6,
-        "speed_multiplier": 0.6
-      },
       "minecraft:behavior.random_look_around": { "priority": 9 }
     },
 
@@ -161,7 +172,7 @@
       "minecraft:entity_spawned": {
         "sequence": [
           {
-            "add": { "component_groups": ["npc:size_m", "npc:look_on"] }
+            "add": { "component_groups": ["npc:size_m", "npc:look_on", "npc:wander"] }
           }
         ]
       },
@@ -189,6 +200,15 @@
       "npc:size_xxl": {
         "remove": { "component_groups": ["npc:size_xs", "npc:size_s", "npc:size_m", "npc:size_l", "npc:size_xl"] },
         "add": { "component_groups": ["npc:size_xxl"] }
+      },
+
+      "npc:move_on": {
+        "remove": { "component_groups": ["npc:frozen"] },
+        "add": { "component_groups": ["npc:wander"] }
+      },
+      "npc:move_off": {
+        "remove": { "component_groups": ["npc:wander"] },
+        "add": { "component_groups": ["npc:frozen"] }
       },
 
       "npc:look_on":  { "add": { "component_groups": ["npc:look_on"] } },

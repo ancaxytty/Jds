@@ -1,38 +1,56 @@
 // =====================================================================
 //  Custom NPC Pro Editor  -  main entry point
-//  by Kiro  -  v2.0.0
+//  by Kiro  -  v3.0.0
 //
-//  Click / tap a Custom NPC to open a full customization menu:
-//  name, tags, commands, size, skin, look-at-player, damage,
-//  functions, animations, presets (save/load) and more.
+//  Interact with a Custom NPC to open a full customization menu OR talk:
+//   - sneak + tap  -> always opens the EDITOR
+//   - tap          -> trade (if trader) / dialogue (if talk) / editor
+//
+//  Features: name, tags, commands, functions, size, skin, 3D models (30),
+//  look-at-player, movement on/off, damage, animations, custom dialogues,
+//  presets (save/load) and more.
 // =====================================================================
 import { world, system } from "@minecraft/server";
 import { NPC_ID, DP } from "./config.js";
-import { openMainMenu } from "./ui.js";
+import { openMainMenu, showDialogue } from "./ui.js";
 import { getConfig } from "./npc.js";
 
 // ---------------------------------------------------------------------
-// Open the editor when a player interacts with a Custom NPC
+// Interaction: open editor or talk depending on state
 // ---------------------------------------------------------------------
 world.afterEvents.playerInteractWithEntity.subscribe((ev) => {
   const { player, target } = ev;
   if (!target || target.typeId !== NPC_ID) return;
 
-  // When the NPC is a trader, a normal tap opens the trade screen, so the
-  // editor is only opened while sneaking. Otherwise any tap opens it.
-  let isTrader = false;
+  let trader = false;
+  let talk = false;
+  let hasDialogue = false;
   try {
-    isTrader = !!target.getDynamicProperty(DP.trader);
+    trader = !!target.getDynamicProperty(DP.trader);
+    talk = !!target.getDynamicProperty(DP.talk);
+    const d = target.getDynamicProperty(DP.dialogue);
+    hasDialogue = typeof d === "string" && d.trim().length > 0;
   } catch (e) {
     /* ignore */
   }
-  if (isTrader && !player.isSneaking) return;
 
-  system.run(() => {
-    openMainMenu(player, target).catch((e) =>
-      console.warn("[CustomNPC] menu error: " + e)
-    );
-  });
+  // Sneak always opens the editor.
+  if (player.isSneaking) {
+    system.run(() => openMainMenu(player, target).catch((e) => console.warn("[CustomNPC] " + e)));
+    return;
+  }
+
+  // Normal tap: trader takes priority (let vanilla trade screen open).
+  if (trader) return;
+
+  // Dialogue mode: talk to the player.
+  if (talk && hasDialogue) {
+    system.run(() => showDialogue(player, target).catch((e) => console.warn("[CustomNPC] " + e)));
+    return;
+  }
+
+  // Otherwise open the editor.
+  system.run(() => openMainMenu(player, target).catch((e) => console.warn("[CustomNPC] " + e)));
 });
 
 // ---------------------------------------------------------------------
@@ -56,10 +74,7 @@ world.afterEvents.entityHitEntity.subscribe((ev) => {
   if (!hostile || dmg <= 0) return;
 
   try {
-    hitEntity.applyDamage(dmg, {
-      cause: "entityAttack",
-      damagingEntity,
-    });
+    hitEntity.applyDamage(dmg, { cause: "entityAttack", damagingEntity });
   } catch (e) {
     /* target may be invulnerable / invalid */
   }
@@ -82,22 +97,19 @@ world.beforeEvents.chatSend.subscribe((ev) => {
     player.sendMessage([
       "§a§l=== Custom NPC Pro Editor ===",
       "§7Coloca el §ehuevo generador§7 para crear un NPC.",
-      "§7Toca / click derecho al NPC para abrir el §eeditor§7.",
-      "§7Comandos, tamano, skin, animaciones, dano, presets y mas.",
+      "§7Toca el NPC para §eeditar§7 o §ehablar§7 (sneak + toca = editor).",
+      "§7Modelos 3D, skins, dialogos, movimiento, dano, presets y mas.",
     ].join("\n"));
   });
 });
 
 // ---------------------------------------------------------------------
-// Startup banner
+// Startup banner + safety refresh of visuals on load
 // ---------------------------------------------------------------------
 system.run(() => {
-  console.log("[CustomNPC] Pro Editor v2.0.0 cargado correctamente.");
+  console.log("[CustomNPC] Pro Editor v3.0.0 cargado correctamente.");
 });
 
-// Re-apply persisted skin/animation properties shortly after load so the
-// visuals always match the saved configuration (properties already persist,
-// this is just a safety refresh for older worlds).
 world.afterEvents.worldInitialize?.subscribe(() => {
   system.runTimeout(() => {
     try {
@@ -105,8 +117,9 @@ world.afterEvents.worldInitialize?.subscribe(() => {
         const d = world.getDimension(dim);
         for (const e of d.getEntities({ type: NPC_ID })) {
           const c = getConfig(e);
-          e.setProperty("custom:skin", c.skin);
+          e.setProperty("custom:model", c.model);
           e.setProperty("custom:anim", c.anim);
+          e.setProperty("custom:skin", c.model === 0 ? c.skin : 8);
         }
       }
     } catch (err) {

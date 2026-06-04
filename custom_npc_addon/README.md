@@ -1,10 +1,9 @@
 # Custom NPC Pro Editor — Minecraft Bedrock Addon
 
 > NPCs totalmente personalizables mediante un **menú interactivo en el juego**.
-> Toca / haz click derecho a un NPC y configura **nombre, skin, tamaño, animaciones,
-> daño, comportamiento, comandos, funciones, etiquetas y presets** — sin tocar un solo archivo.
+> Toca un NPC para **editarlo o hablar con él**; agáchate (sneak) + toca para abrir siempre el editor.
 
-**Versión:** 2.0.0 · **Compatibilidad:** Minecraft Bedrock **1.21.0+** · **Experimentos:** NO requeridos
+**Versión:** 3.0.0 · **Compatibilidad:** Minecraft Bedrock **1.21.0+** · **Experimentos:** no requeridos
 
 ---
 
@@ -12,111 +11,106 @@
 
 | Función | Descripción |
 |---|---|
-| 🪧 **Nombre** | Cambia el nombre del NPC (soporta colores con `&`, ej. `&bAzul`). |
-| 🎨 **Skin** | 8 skins incluidas: Clásico, Guardia, Mago, Aldeano, Caballero, Realeza, Ninja, Médico. |
-| 📏 **Tamaño** | 6 tamaños: Diminuto (0.5x) → Colosal (3.0x). Cambia hitbox y visual. |
-| 💃 **Animaciones** | Idle, Saludar, Asentir, Girar y Bailar (en bucle). |
-| 👁️ **Mirar al jugador** | Activa/desactiva que el NPC siga al jugador con la mirada. |
-| ⚔️ **Hostil + Daño** | Conviértelo en enemigo y define el daño por golpe (0–100). |
-| 🛡️ **Inmortal** | Modo invulnerable (ideal para NPCs decorativos). |
-| 🏷️ **Etiquetas (tags)** | Añade y elimina tags para usarlos con tus comandos. |
-| ⌨️ **Comandos** | Ejecuta y guarda comandos desde el NPC (separados por `;`). |
-| 📜 **Funciones** | Ejecuta archivos `.mcfunction` desde el NPC. |
-| 🛒 **Comerciante** | Activa una tienda (toca normal = comerciar, agáchate + toca = editor). |
-| 💾 **Presets** | Guarda configuraciones completas y cárgalas en otros NPCs. |
-| 🧰 **Acciones** | Traer/teleportar, curar, clonar, dar huevo generador o eliminar el NPC. |
+| 🪧 **Nombre** | Cambia el nombre (colores con `&`, ej. `&bAzul`). |
+| 🎨 **Skin** | 8 skins para el modelo Humanoide. |
+| 🧊 **Modelos 3D** | Botón **Modelos** con 30 modelos 3D intercambiables (`model-1`…`model-30`). |
+| 📏 **Tamaño** | 6 tamaños: Diminuto (0.5x) → Colosal (3.0x). |
+| 💃 **Animaciones** | Idle, Saludar, Asentir, Girar, Bailar (modelo humanoide). |
+| 👁️ **Mirar al jugador** | On/Off. |
+| 🚶 **Movimiento** | **Se mueve / no se mueve** (camina o queda estático). |
+| ⚔️ **Hostil + Daño** | Enemigo con daño configurable (0–100). |
+| 🛡️ **Inmortal** | Modo invulnerable. |
+| 💬 **Diálogos custom** | Crea diálogos por páginas (separadas con `|`) que se muestran al tocar. |
+| 🏷️ **Etiquetas (tags)** | Añadir / eliminar. |
+| ⌨️ **Comandos** | Ejecuta y guarda comandos desde el NPC. |
+| 📜 **Funciones** | Ejecuta archivos `.mcfunction`. |
+| 🛒 **Comerciante** | Tienda al tocar. |
+| 💾 **Presets** | Guarda y reutiliza configuraciones completas. |
+| 🧰 **Acciones** | Traer/teleportar, curar, clonar, dar huevo, eliminar. |
 
-Toda la configuración **se guarda automáticamente** y persiste al cerrar el mundo.
+Todo se **guarda automáticamente** y persiste al cerrar el mundo.
+
+---
+
+## 🧊 Modelos 3D (model.json) — cómo funciona
+
+El addon incluye **30 modelos cubo de relleno** listos para reemplazar por los tuyos:
+
+```
+resource_pack/models/entity/
+├── model-1/model.json     (geometry.cube_model_1)
+├── model-2/model.json     (geometry.cube_model_2)
+├── ...
+└── model-30/model.json    (geometry.cube_model_30)
+```
+
+- En el editor: botón **Modelos 3D** → elige **Humanoide** o **Modelo 3D 1..30**.
+- Cada cubo usa la textura por defecto `textures/entity/models/cube.png`.
+
+### Subir tus propios modelos de Blockbench
+1. En Blockbench: *File → Export → Bedrock Geometry* (`.json`).
+2. Pega tu archivo en `models/entity/model-N/model.json` (reemplaza el cubo).
+3. **IMPORTANTE:** dentro del archivo, cambia el `identifier` a **`geometry.cube_model_N`**
+   (el mismo número de la carpeta) para que el addon lo reconozca.
+4. (Opcional) Reemplaza `textures/entity/models/cube.png` por la textura de tu modelo,
+   o edita el render controller para usar texturas por modelo.
+5. En el juego, abre el editor → **Modelos 3D** → selecciona ese número.
+
+> Los modelos 3D usan la textura "cube"; las 8 skins humanoides aplican al modelo Humanoide.
+
+---
+
+## 💬 Diálogos custom
+
+1. Editor → **Diálogos**.
+2. Escribe el texto; separa páginas con `|`. Ej: `Hola!|Bienvenido|Vuelve pronto`.
+3. Activa **"Hablar al tocar"**.
+4. Ahora un **toque normal** muestra el diálogo; **sneak + toque** abre el editor.
 
 ---
 
 ## 📥 Instalación
 
-### Opción 1 — `.mcaddon` (recomendada)
-1. Descarga **`custom_npc_addon.mcaddon`**.
-2. Ábrelo: Minecraft lo importará automáticamente (behavior + resource pack).
-3. Al crear/editar un mundo, activa **ambos** packs:
-   - Behavior Pack: *Custom NPC | Pro Editor*
-   - Resource Pack: *Custom NPC | Resources*
-4. Activa **"Usar API Beta de Scripting de GameTest"** solo si tu versión lo pide.
-   *(En 1.21+ no suele ser necesario porque usa APIs estables.)*
+### `.mcaddon` (recomendada)
+1. Descarga **`custom_npc_addon.mcaddon`** y ábrelo (Minecraft lo importa solo).
+2. Al crear/editar el mundo, activa **ambos** packs (behavior + resource).
 
-### Opción 2 — `.mcpack` individuales
-Importa por separado `behavior_pack.mcpack` y `resource_pack.mcpack`.
+### `.mcpack` individuales
+Importa `behavior_pack.mcpack` y `resource_pack.mcpack` por separado.
 
-> ⚠️ El behavior pack y el resource pack están **vinculados**: deben activarse **los dos**
-> para que los scripts y las texturas funcionen.
+> El behavior y el resource pack están **vinculados**: actívalos **los dos**.
 
 ---
 
-## 🎮 Cómo usar
-
-1. **Conseguir el NPC**
-   - Escribe `!npc` en el chat para recibir el **huevo generador**, o
-   - Usa el comando `/give @s custom:npc_spawn_egg`, o
-   - Invócalo con `/summon custom:npc`.
-2. **Coloca** el huevo para crear el NPC.
-3. **Toca / click derecho** al NPC → se abre el **Editor de NPC**.
-4. Navega por los botones y personaliza todo. Los cambios se aplican al instante.
-
----
-
-## 🗂️ Estructura del proyecto
-
-```
-custom_npc_addon/
-├── behavior_pack/
-│   ├── manifest.json                 # módulo data + módulo script
-│   ├── pack_icon.png
-│   ├── entities/custom_npc.json      # propiedades, component_groups, eventos
-│   ├── trading/custom_npc_trades.json
-│   └── scripts/                      # Script API (@minecraft/server + server-ui)
-│       ├── main.js                   # eventos: interacción, daño, chat
-│       ├── ui.js                     # formularios del editor
-│       ├── npc.js                    # leer/escribir configuración del NPC
-│       ├── presets.js                # guardar/cargar presets
-│       ├── config.js                 # constantes (skins, tamaños, anim...)
-│       └── util.js                   # utilidades (forms con reintento, etc.)
-└── resource_pack/
-    ├── manifest.json
-    ├── pack_icon.png
-    ├── entity/custom_npc.entity.json
-    ├── render_controllers/           # selección de skin por propiedad
-    ├── animations/                   # idle, wave, nod, spin, dance
-    ├── animation_controllers/        # máquina de estados de animación
-    ├── models/entity/custom_npc.geo.json
-    ├── textures/entity/              # custom_npc_0..7.png (8 skins)
-    └── texts/                        # en_US, es_ES, es_MX
-```
+## 🎮 Uso rápido
+1. Escribe `!npc` en el chat para recibir el huevo (o `/give @s custom:npc_spawn_egg`, o `/summon custom:npc`).
+2. Coloca el NPC.
+3. **Toca** el NPC → editar o hablar · **sneak + toca** → editor.
 
 ---
 
 ## 🔧 Cómo funciona (técnico)
 
-- **Skin / Animación:** propiedades de entidad declaradas (`custom:skin`, `custom:anim`,
-  `client_sync`) leídas por el *render controller* y el *animation controller* vía
-  `query.property(...)`. El script las cambia con `setProperty`.
-- **Tamaño:** `component_groups` con `minecraft:scale` activados por eventos `npc:size_*`.
-- **Mirar / Hostil / Inmortal / Comerciante:** `component_groups` añadidos/quitados por eventos.
-- **Daño configurable:** el grupo hostil ataca con daño 0; el daño real se aplica por script
-  en `entityHitEntity` con `applyDamage(...)`, permitiendo cualquier valor.
-- **Persistencia:** se usan *dynamic properties* (por NPC) y los *component groups* añadidos,
-  que Minecraft guarda con el mundo. Los **presets** se guardan en *dynamic properties* del mundo.
-- **Formularios fiables:** se reintenta `form.show()` cuando el jugador está ocupado
-  (`FormCancelationReason.UserBusy`), evitando que el menú no abra tras interactuar.
+- **Modelo / Skin / Animación:** propiedades de entidad (`custom:model`, `custom:skin`,
+  `custom:anim`, `client_sync`) leídas por el *render controller* (arrays `Array.geos` y
+  `Array.skins`) y el *animation controller* vía `query.property(...)`.
+- **Tamaño / Mirar / Movimiento / Hostil / Inmortal / Tienda:** `component_groups`
+  activados por eventos (`npc:size_*`, `npc:move_on/off`, `npc:look_*`, etc.).
+- **No moverse:** grupo `npc:frozen` (`minecraft:movement = 0`) y se quita `npc:wander`.
+- **Daño configurable:** el grupo hostil ataca con daño 0; el daño real se aplica por
+  script en `entityHitEntity` con `applyDamage(...)`.
+- **Diálogos:** se guardan en una *dynamic property* y se muestran con `MessageFormData`.
+- **Persistencia:** *dynamic properties* + *component groups*; presets en *dynamic
+  properties* del mundo.
 
 ---
 
-## 🎨 Regenerar las texturas
-
-Las skins y los iconos se generan con un script en Python puro (sin dependencias):
+## 🎨 Regenerar assets
 
 ```bash
-python3 _tools/gen_textures.py
+python3 _tools/gen_textures.py   # 8 skins humanoides + icons
+python3 _tools/gen_models.py     # cube.png + 30 model.json + entity/render controller
 ```
-
-Edita la lista `SKINS` en `_tools/gen_textures.py` para crear o cambiar skins
-(colores de piel, ropa, pantalón y pelo).
 
 ---
 
@@ -124,17 +118,13 @@ Edita la lista `SKINS` en `_tools/gen_textures.py` para crear o cambiar skins
 
 | Problema | Solución |
 |---|---|
-| El menú no abre | Asegúrate de tener **1.21.0+** y de activar el **behavior pack** (es el que trae los scripts). |
-| El NPC no aparece | Activa también el **resource pack**; reinicia el mundo. |
-| La skin se ve rara | Verifica que el resource pack esté activo (desactívalo y reactívalo). |
-| No comercia | Activa "Comerciante" en *Comportamiento*; toca normal para comerciar. |
-| Scripts no cargan | Si tu versión lo pide, activa "API Beta de Scripting" en los ajustes del mundo. |
+| El menú no abre | Requiere **1.21.0+** y el **behavior pack** activo (trae los scripts). |
+| El modelo 3D no cambia | Verifica que el `identifier` del `model.json` sea `geometry.cube_model_N`. |
+| La skin no se ve en un modelo 3D | Las skins son para Humanoide; los modelos usan la textura "cube". |
+| No habla | Activa "Hablar al tocar" en Diálogos y escribe texto. |
+| No se queda quieto | Desactiva "Se mueve / camina" en Comportamiento. |
 
 ---
 
-## 📝 Licencia y créditos
-
-Uso libre para proyectos personales y educativos.
-Addon creado con **Kiro AI Assistant**.
-
-— *Custom NPC Pro Editor v2.0.0*
+Addon creado con **Kiro AI Assistant** · Uso libre para proyectos personales y educativos.
+— *Custom NPC Pro Editor v3.0.0*

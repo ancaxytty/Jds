@@ -1,10 +1,9 @@
 # Custom NPC Pro Editor — Minecraft Bedrock Addon
 
 NPCs totalmente personalizables mediante un **menú interactivo en el juego**.
-Toca / haz click derecho a un NPC y configura **nombre, skin, tamaño, animaciones,
-daño, comportamiento, comandos, funciones, etiquetas y presets** — sin tocar ningún archivo.
+Toca un NPC para **editarlo o hablar con él**; agáchate (sneak) + toca para abrir siempre el editor.
 
-**Versión:** 2.0.0 · **Compatibilidad:** Minecraft Bedrock **1.21.0+** · **Experimentos:** no requeridos
+**Versión:** 3.0.0 · **Compatibilidad:** Minecraft Bedrock **1.21.0+** · **Experimentos:** no requeridos
 
 ---
 
@@ -14,58 +13,65 @@ daño, comportamiento, comandos, funciones, etiquetas y presets** — sin tocar 
 |---|---|
 | [`custom_npc_addon.mcaddon`](custom_npc_addon.mcaddon) | **Instalación con 1 clic** (behavior + resource pack). |
 | [`custom_npc_addon/behavior_pack.mcpack`](custom_npc_addon/behavior_pack.mcpack) | Solo el behavior pack (scripts + entidad). |
-| [`custom_npc_addon/resource_pack.mcpack`](custom_npc_addon/resource_pack.mcpack) | Solo el resource pack (texturas + modelo). |
+| [`custom_npc_addon/resource_pack.mcpack`](custom_npc_addon/resource_pack.mcpack) | Solo el resource pack (texturas + modelos). |
 | [`custom_npc_addon_complete.zip`](custom_npc_addon_complete.zip) | Código fuente completo + paquetes. |
 
-> Para descargar un archivo: ábrelo en GitHub y pulsa **Download** (o el botón **Raw**).
+> Para descargar: abre el archivo en GitHub y pulsa **Download** / **Raw**.
 
 ---
 
-## ✨ Qué puedes personalizar
+## ✨ Novedades v3.0.0
 
-- 🪧 **Nombre** (con colores usando `&`)
-- 🎨 **Skin** — 8 incluidas: Clásico, Guardia, Mago, Aldeano, Caballero, Realeza, Ninja, Médico
-- 📏 **Tamaño** — de Diminuto (0.5x) a Colosal (3.0x)
-- 💃 **Animaciones** — Idle, Saludar, Asentir, Girar, Bailar
-- 👁️ **Mirar al jugador** (on/off)
-- ⚔️ **Hostil + Daño** configurable (0–100)
-- 🛡️ **Inmortal** (invulnerable)
-- 🏷️ **Etiquetas (tags)** — añadir / eliminar
-- ⌨️ **Comandos** — ejecutar y guardar
-- 📜 **Funciones** `.mcfunction`
-- 🛒 **Comerciante** — abre tienda al tocar
-- 💾 **Presets** — guarda y reutiliza configuraciones
-- 🧰 **Acciones** — traer/teleportar, curar, clonar, dar huevo, eliminar
+- 🧊 **Modelos 3D (model.json):** botón **Modelos** con **30 modelos** intercambiables
+  (`model-1`…`model-30`), cada uno un cubo por defecto listo para reemplazar por tu modelo de Blockbench.
+- 💬 **Diálogos custom:** crea diálogos por páginas que se muestran al tocar el NPC.
+- 🚶 **Movimiento on/off:** que el NPC **camine o se quede estático**.
+- 🔧 JSON mejorado (propiedades de entidad, component groups y eventos nuevos).
+
+## ✨ Personalización completa
+
+Nombre · Skin (8) · **Modelos 3D (30)** · Tamaño (6) · Animaciones (5) · Mirar al jugador ·
+**Movimiento** · Hostil + **Daño (0–100)** · Inmortal · **Diálogos** · Tags · Comandos ·
+Funciones · Comerciante · **Presets** · Acciones (traer, teleportar, curar, clonar, eliminar).
 
 Todo se **guarda automáticamente** y persiste al cerrar el mundo.
+
+---
+
+## 🧊 Modelos 3D — estructura
+
+```
+resource_pack/models/entity/
+├── model-1/model.json     (geometry.cube_model_1)
+├── ...
+└── model-30/model.json    (geometry.cube_model_30)
+```
+
+Para usar tu propio modelo de Blockbench: exporta la geometría, pégala en
+`model-N/model.json` y cambia su `identifier` a `geometry.cube_model_N`
+(el mismo número de carpeta). Luego elígelo en el editor → **Modelos 3D**.
+
+Más detalles en **[`custom_npc_addon/README.md`](custom_npc_addon/README.md)**.
 
 ---
 
 ## 📥 Instalación rápida
 
 1. Descarga **`custom_npc_addon.mcaddon`** y ábrelo (Minecraft lo importa solo).
-2. Al crear/editar el mundo, activa **ambos** packs (behavior + resource).
-3. En el chat escribe `!npc` para recibir el **huevo generador** (o `/give @s custom:npc_spawn_egg`, o `/summon custom:npc`).
-4. Coloca el NPC y **tócalo** para abrir el editor.
+2. Activa **ambos** packs (behavior + resource) en el mundo.
+3. En el chat escribe `!npc` para el huevo (o `/summon custom:npc`).
+4. **Toca** el NPC → editar/hablar · **sneak + toca** → editor.
 
 > El behavior y el resource pack están vinculados: actívalos **los dos**.
-
----
-
-## 📚 Documentación completa
-
-Consulta **[`custom_npc_addon/README.md`](custom_npc_addon/README.md)** para:
-detalles técnicos, estructura del proyecto, cómo regenerar las texturas y
-solución de problemas.
 
 ---
 
 ## 🛠️ Tecnología
 
 - **Script API** de Minecraft Bedrock: `@minecraft/server` `1.11.0` + `@minecraft/server-ui` `1.2.0`
-- Skins y animaciones controladas por **propiedades de entidad** (`client_sync`)
-- Tamaño y comportamientos vía **component groups** + eventos
-- Daño configurable aplicado por script en `entityHitEntity`
+- Geometría y textura intercambiables por **propiedades de entidad** (`custom:model`, `custom:skin`) vía render controller con arrays
+- Movimiento y comportamientos vía **component groups** + eventos
+- Daño configurable por script en `entityHitEntity`; diálogos con `MessageFormData`
 - Persistencia con **dynamic properties**; presets guardados en el mundo
 
 ---

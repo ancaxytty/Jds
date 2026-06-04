@@ -3,7 +3,7 @@
 // =====================================================================
 import { system } from "@minecraft/server";
 import { ActionFormData, ModalFormData, MessageFormData } from "@minecraft/server-ui";
-import { SKINS, SIZES, ANIMS, MAX_DAMAGE, NPC_ID } from "./config.js";
+import { SKINS, SIZES, ANIMS, MAX_DAMAGE, NPC_ID, modelLabels } from "./config.js";
 import { forceShow, uiSound, msg } from "./util.js";
 import * as NPC from "./npc.js";
 import * as Presets from "./presets.js";
@@ -18,6 +18,7 @@ function isValid(npc) {
 }
 
 const onOff = (b) => (b ? "§aON" : "§cOFF");
+const modelName = (i) => (i === 0 ? "Humanoide" : "Modelo 3D " + i);
 
 // ---------------------------------------------------------------------
 // MAIN MENU
@@ -33,11 +34,10 @@ export async function openMainMenu(player, npc) {
   const body =
     `§7Configura este NPC con los botones de abajo.\n\n` +
     `§fNombre: §r${c.name}\n` +
-    `§fSkin: §r${SKINS[c.skin] ?? "?"}\n` +
-    `§fTamano: §r${SIZES[c.size]?.label ?? "?"}\n` +
-    `§fAnimacion: §r${ANIMS[c.anim] ?? "?"}\n` +
-    `§fMirar jugador: ${onOff(c.look)}  §fHostil: ${onOff(c.hostile)}\n` +
-    `§fInmortal: ${onOff(c.god)}  §fComerciante: ${onOff(c.trader)}\n` +
+    `§fModelo: §r${modelName(c.model)}  §fSkin: §r${SKINS[c.skin] ?? "?"}\n` +
+    `§fTamano: §r${SIZES[c.size]?.label ?? "?"}  §fAnim: §r${ANIMS[c.anim] ?? "?"}\n` +
+    `§fMira: ${onOff(c.look)} §fCamina: ${onOff(c.move)} §fHostil: ${onOff(c.hostile)}\n` +
+    `§fInmortal: ${onOff(c.god)} §fTienda: ${onOff(c.trader)} §fDialogo: ${onOff(c.talk)}\n` +
     `§fDano: §r${c.damage} §8| §fTags: §r${npc.getTags().length}`;
 
   const form = new ActionFormData()
@@ -45,10 +45,12 @@ export async function openMainMenu(player, npc) {
     .body(body)
     .button("§l§eNombre", "textures/items/name_tag")
     .button("§l§bApariencia / Skin", "textures/items/leather")
+    .button("§l§3Modelos 3D", "textures/blocks/crafting_table_front")
     .button("§l§dTamano", "textures/items/blaze_powder")
     .button("§l§5Animacion", "textures/items/firework_star")
     .button("§l§aComportamiento", "textures/items/spyglass")
     .button("§l§cDano", "textures/items/diamond_sword")
+    .button("§l§6Dialogos", "textures/items/book_normal")
     .button("§l§6Etiquetas (Tags)", "textures/items/paper")
     .button("§l§eComandos", "textures/items/book_writable")
     .button("§l§9Funciones", "textures/items/book_enchanted")
@@ -61,20 +63,21 @@ export async function openMainMenu(player, npc) {
   switch (r.selection) {
     case 0: return editName(player, npc);
     case 1: return editSkin(player, npc);
-    case 2: return editSize(player, npc);
-    case 3: return editAnim(player, npc);
-    case 4: return editBehavior(player, npc);
-    case 5: return editDamage(player, npc);
-    case 6: return tagsMenu(player, npc);
-    case 7: return editCommands(player, npc);
-    case 8: return editFunctions(player, npc);
-    case 9: return presetsMenu(player, npc);
-    case 10: return actionsMenu(player, npc);
+    case 2: return editModel(player, npc);
+    case 3: return editSize(player, npc);
+    case 4: return editAnim(player, npc);
+    case 5: return editBehavior(player, npc);
+    case 6: return editDamage(player, npc);
+    case 7: return editDialogue(player, npc);
+    case 8: return tagsMenu(player, npc);
+    case 9: return editCommands(player, npc);
+    case 10: return editFunctions(player, npc);
+    case 11: return presetsMenu(player, npc);
+    case 12: return actionsMenu(player, npc);
   }
 }
 
 function back(player, npc) {
-  // small delay then reopen the main menu for a smooth flow
   system.runTimeout(() => openMainMenu(player, npc), 2);
 }
 
@@ -100,10 +103,34 @@ async function editSkin(player, npc) {
   const c = NPC.getConfig(npc);
   const form = new ModalFormData()
     .title("§l§bApariencia / Skin")
-    .dropdown("§7Elige una skin", SKINS, c.skin);
+    .dropdown("§7Skin (solo modelo Humanoide)", SKINS, c.skin);
   const r = await forceShow(player, form);
   if (!r || r.canceled) return back(player, npc);
   NPC.setSkin(npc, r.formValues[0]);
+  if (c.model !== 0) msg(player, "§7Nota: este NPC usa un modelo 3D. Cambia a §fHumanoide§7 en Modelos 3D para ver la skin.");
+  uiSound(player);
+  back(player, npc);
+}
+
+// ---------------------------------------------------------------------
+// MODELS 3D
+// ---------------------------------------------------------------------
+async function editModel(player, npc) {
+  const c = NPC.getConfig(npc);
+  const labels = modelLabels();
+  const form = new ActionFormData()
+    .title("§l§3Modelos 3D")
+    .body(
+      `§7Modelo actual: §f${modelName(c.model)}\n` +
+      `§7Elige Humanoide o uno de los 30 modelos 3D.\n` +
+      `§8Reemplaza models/entity/model-N/model.json con tu modelo de Blockbench (manten el identificador geometry.cube_model_N).`
+    );
+  for (const l of labels) form.button(l);
+
+  const r = await forceShow(player, form);
+  if (!r || r.canceled) return back(player, npc);
+  NPC.setModel(npc, r.selection); // 0 = humanoid, 1..30 = model
+  msg(player, `§aModelo aplicado: §f${modelName(r.selection)}`);
   uiSound(player);
   back(player, npc);
 }
@@ -130,7 +157,7 @@ async function editAnim(player, npc) {
   const c = NPC.getConfig(npc);
   const form = new ModalFormData()
     .title("§l§5Animacion")
-    .dropdown("§7Animacion en bucle", ANIMS, c.anim);
+    .dropdown("§7Animacion en bucle §8(solo Humanoide)", ANIMS, c.anim);
   const r = await forceShow(player, form);
   if (!r || r.canceled) return back(player, npc);
   NPC.setAnim(npc, r.formValues[0]);
@@ -139,25 +166,27 @@ async function editAnim(player, npc) {
 }
 
 // ---------------------------------------------------------------------
-// BEHAVIOR (look / hostile / god / trader)
+// BEHAVIOR (look / move / hostile / god / trader)
 // ---------------------------------------------------------------------
 async function editBehavior(player, npc) {
   const c = NPC.getConfig(npc);
   const form = new ModalFormData()
     .title("§l§aComportamiento")
     .toggle("§7Mirar al jugador", c.look)
+    .toggle("§7Se mueve / camina", c.move)
     .toggle("§7Hostil (ataca jugadores y mobs)", c.hostile)
     .toggle("§7Inmortal (no recibe dano)", c.god)
     .toggle("§7Comerciante (abre tienda al tocar)", c.trader);
   const r = await forceShow(player, form);
   if (!r || r.canceled) return back(player, npc);
-  const [look, hostile, god, trader] = r.formValues;
+  const [look, move, hostile, god, trader] = r.formValues;
   NPC.setLook(npc, look);
+  NPC.setMove(npc, move);
   NPC.setHostile(npc, hostile);
   NPC.setGod(npc, god);
   NPC.setTrader(npc, trader);
   uiSound(player);
-  if (trader) msg(player, "§eComerciante activado: §7toca el NPC normal para comerciar, agachate (sneak) + toca para abrir el editor.");
+  if (trader) msg(player, "§eTienda activada: §7toca normal = comerciar, agachate (sneak) + toca = editor.");
   back(player, npc);
 }
 
@@ -176,6 +205,47 @@ async function editDamage(player, npc) {
   if (r.formValues[1]) NPC.setHostile(npc, true);
   uiSound(player);
   back(player, npc);
+}
+
+// ---------------------------------------------------------------------
+// DIALOGUES
+// ---------------------------------------------------------------------
+async function editDialogue(player, npc) {
+  const c = NPC.getConfig(npc);
+  const form = new ModalFormData()
+    .title("§l§6Dialogos")
+    .textField(
+      "§7Texto del dialogo. Separa paginas con §f|§7.\n§8Usa & para colores.",
+      "Hola viajero!|Bienvenido a mi tienda.|Vuelve pronto.",
+      c.dialogue
+    )
+    .toggle("§7Hablar al tocar (modo dialogo)", c.talk);
+  const r = await forceShow(player, form);
+  if (!r || r.canceled) return back(player, npc);
+  NPC.setDialogue(npc, r.formValues[0]);
+  NPC.setTalk(npc, r.formValues[1]);
+  uiSound(player);
+  if (r.formValues[1]) msg(player, "§aModo dialogo activado: §7toca el NPC para hablar, sneak + toca para editar.");
+  back(player, npc);
+}
+
+/** Show the NPC dialogue pages to a player (used on normal interaction). */
+export async function showDialogue(player, npc) {
+  const pages = NPC.dialoguePages(npc);
+  if (pages.length === 0) return openMainMenu(player, npc);
+  const name = (npc.nameTag && npc.nameTag.length ? npc.nameTag : "NPC");
+  for (let i = 0; i < pages.length; i++) {
+    const last = i === pages.length - 1;
+    const form = new MessageFormData()
+      .title(name)
+      .body(pages[i])
+      .button1(last ? "§7Cerrar" : "§aSiguiente")
+      .button2("§8Salir");
+    const r = await forceShow(player, form);
+    if (!r || r.canceled) return;
+    if (r.selection === 1) return; // "Salir"
+    if (last) return;
+  }
 }
 
 // ---------------------------------------------------------------------

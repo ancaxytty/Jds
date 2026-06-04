@@ -14,13 +14,46 @@
         "s4": "textures/entity/custom_npc_4",
         "s5": "textures/entity/custom_npc_5",
         "s6": "textures/entity/custom_npc_6",
-        "s7": "textures/entity/custom_npc_7"
+        "s7": "textures/entity/custom_npc_7",
+        "cube": "textures/entity/models/cube"
       },
       "geometry": {
-        "default": "geometry.custom_npc"
+        "default": "geometry.custom_npc",
+        "m1": "geometry.cube_model_1",
+        "m2": "geometry.cube_model_2",
+        "m3": "geometry.cube_model_3",
+        "m4": "geometry.cube_model_4",
+        "m5": "geometry.cube_model_5",
+        "m6": "geometry.cube_model_6",
+        "m7": "geometry.cube_model_7",
+        "m8": "geometry.cube_model_8",
+        "m9": "geometry.cube_model_9",
+        "m10": "geometry.cube_model_10",
+        "m11": "geometry.cube_model_11",
+        "m12": "geometry.cube_model_12",
+        "m13": "geometry.cube_model_13",
+        "m14": "geometry.cube_model_14",
+        "m15": "geometry.cube_model_15",
+        "m16": "geometry.cube_model_16",
+        "m17": "geometry.cube_model_17",
+        "m18": "geometry.cube_model_18",
+        "m19": "geometry.cube_model_19",
+        "m20": "geometry.cube_model_20",
+        "m21": "geometry.cube_model_21",
+        "m22": "geometry.cube_model_22",
+        "m23": "geometry.cube_model_23",
+        "m24": "geometry.cube_model_24",
+        "m25": "geometry.cube_model_25",
+        "m26": "geometry.cube_model_26",
+        "m27": "geometry.cube_model_27",
+        "m28": "geometry.cube_model_28",
+        "m29": "geometry.cube_model_29",
+        "m30": "geometry.cube_model_30"
       },
       "scripts": {
-        "animate": ["ctrl_main"]
+        "animate": [
+          "ctrl_main"
+        ]
       },
       "animations": {
         "ctrl_main": "controller.animation.custom_npc.main",
@@ -30,7 +63,9 @@
         "spin": "animation.custom_npc.spin",
         "dance": "animation.custom_npc.dance"
       },
-      "render_controllers": ["controller.render.custom_npc"],
+      "render_controllers": [
+        "controller.render.custom_npc"
+      ],
       "spawn_egg": {
         "base_color": "#3B8E35",
         "overlay_color": "#8B4513"

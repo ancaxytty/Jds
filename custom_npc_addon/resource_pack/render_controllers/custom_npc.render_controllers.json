@@ -2,11 +2,48 @@
   "format_version": "1.10.0",
   "render_controllers": {
     "controller.render.custom_npc": {
-      "geometry": "Geometry.default",
+      "geometry": "Array.geos[query.property('custom:model')]",
       "materials": [
-        { "*": "Material.default" }
+        {
+          "*": "Material.default"
+        }
       ],
       "arrays": {
+        "geometries": {
+          "Array.geos": [
+            "Geometry.default",
+            "Geometry.m1",
+            "Geometry.m2",
+            "Geometry.m3",
+            "Geometry.m4",
+            "Geometry.m5",
+            "Geometry.m6",
+            "Geometry.m7",
+            "Geometry.m8",
+            "Geometry.m9",
+            "Geometry.m10",
+            "Geometry.m11",
+            "Geometry.m12",
+            "Geometry.m13",
+            "Geometry.m14",
+            "Geometry.m15",
+            "Geometry.m16",
+            "Geometry.m17",
+            "Geometry.m18",
+            "Geometry.m19",
+            "Geometry.m20",
+            "Geometry.m21",
+            "Geometry.m22",
+            "Geometry.m23",
+            "Geometry.m24",
+            "Geometry.m25",
+            "Geometry.m26",
+            "Geometry.m27",
+            "Geometry.m28",
+            "Geometry.m29",
+            "Geometry.m30"
+          ]
+        },
         "textures": {
           "Array.skins": [
             "Texture.s0",
@@ -16,7 +53,8 @@
             "Texture.s4",
             "Texture.s5",
             "Texture.s6",
-            "Texture.s7"
+            "Texture.s7",
+            "Texture.cube"
           ]
         }
       },

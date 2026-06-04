@@ -8,8 +8,10 @@ export const NPC_ID = "custom:npc";
 export const DP = {
   name: "npc:name",
   skin: "npc:skin",
+  model: "npc:model",
   size: "npc:size",
   look: "npc:look",
+  move: "npc:move",
   hostile: "npc:hostile",
   trader: "npc:trader",
   god: "npc:god",
@@ -17,6 +19,8 @@ export const DP = {
   anim: "npc:anim",
   commands: "npc:commands",
   functions: "npc:functions",
+  dialogue: "npc:dialogue",
+  talk: "npc:talk",
   init: "npc:init",
 };
 
@@ -25,6 +29,8 @@ export const WORLD_PRESETS_INDEX = "npc:presets_index";
 export const WORLD_PRESET_PREFIX = "npc:preset:";
 
 // Skin catalogue - order MUST match the render controller Array.skins
+// (8 humanoid skins). The render controller also has a 9th texture (index 8)
+// used automatically for the cube/3D models.
 export const SKINS = [
   "§aClasico",
   "§9Guardia",
@@ -35,6 +41,19 @@ export const SKINS = [
   "§8Ninja",
   "§fMedico",
 ];
+
+// Texture index reserved for the cube / 3D model skin (index 8 in Array.skins)
+export const CUBE_SKIN_INDEX = 8;
+
+// Number of cube model.json placeholders (model-1 .. model-30)
+export const MODEL_COUNT = 30;
+
+// Model option labels: index 0 = humanoid, 1..30 = cube models
+export function modelLabels() {
+  const out = ["§aHumanoide §8(usa skin)"];
+  for (let i = 1; i <= MODEL_COUNT; i++) out.push(`§bModelo 3D §f${i}`);
+  return out;
+}
 
 // Size tiers - index maps to the entity event triggered
 export const SIZES = [
@@ -59,8 +78,10 @@ export const ANIMS = [
 export const DEFAULTS = {
   name: "§aNPC Personalizado",
   skin: 0,
+  model: 0, // 0 = humanoid
   size: 2, // index in SIZES -> Normal
   look: true,
+  move: true,
   hostile: false,
   trader: false,
   god: false,
@@ -68,6 +89,8 @@ export const DEFAULTS = {
   anim: 0,
   commands: "",
   functions: "",
+  dialogue: "",
+  talk: false,
 };
 
 export const MAX_DAMAGE = 100;
