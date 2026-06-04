@@ -86,12 +86,8 @@
           "grid_item_template": "server_form.holo_button",
           "grid_fill_direction": "horizontal",
           "grid_rescaling_type": "horizontal",
-          "anchor_from": "center",
-          "anchor_to": "center",
-          "factory": {
-            "name": "buttons",
-            "control_name": "server_form.holo_button"
-          },
+          "anchor_from": "top_left",
+          "anchor_to": "top_left",
           "collection_name": "form_buttons",
           "bindings": [
             {
@@ -106,40 +102,55 @@
 
   "holo_button": {
     "type": "panel",
-    "size": [110, 56],
+    "size": [116, 58],
     "controls": [
       {
         "main_ui": {
           "type": "panel",
-          "size": [104, 50],
+          "size": [110, 52],
           "controls": [
+            {
+              "form_button@common_buttons.light_text_button": {
+                "$pressed_button_name": "button.form_button_click",
+                "anchor_from": "top_left",
+                "anchor_to": "top_left",
+                "size": [110, 52],
+                "layer": 1,
+                "$button_text": "#null",
+                "$button_text_binding_type": "collection",
+                "$button_text_grid_collection_name": "form_buttons",
+                "$button_text_max_size": ["100%", 20],
+                "bindings": [
+                  {
+                    "binding_type": "collection_details",
+                    "binding_collection_name": "form_buttons"
+                  }
+                ]
+              }
+            },
             {
               "tile_bg": {
                 "type": "image",
                 "texture": "textures/holo_ui/btn_tile",
-                "size": ["100%", "100%"],
-                "alpha": 0.9,
-                "layer": 1
+                "size": [110, 52],
+                "alpha": 0.85,
+                "layer": 3,
+                "ignored": false
               }
             },
             {
               "icon": {
                 "type": "image",
-                "layer": 5,
-                "size": [40, 40],
-                "offset": [8, 0],
+                "layer": 12,
+                "size": [38, 38],
+                "offset": [10, 0],
                 "anchor_from": "left_middle",
                 "anchor_to": "left_middle",
+                "keep_ratio": true,
                 "bindings": [
                   {
                     "binding_name": "#form_button_texture",
                     "binding_name_override": "#texture",
-                    "binding_type": "collection",
-                    "binding_collection_name": "form_buttons"
-                  },
-                  {
-                    "binding_name": "#form_button_texture_file_system",
-                    "binding_name_override": "#texture_file_system",
                     "binding_type": "collection",
                     "binding_collection_name": "form_buttons"
                   },
@@ -155,35 +166,16 @@
               "label": {
                 "type": "label",
                 "text": "#form_button_text",
-                "layer": 6,
-                "color": [0.78, 0.95, 1.0],
+                "layer": 13,
+                "color": [0.82, 0.96, 1.0],
                 "offset": [54, 0],
-                "size": [50, "default"],
+                "size": [52, "default"],
                 "anchor_from": "left_middle",
                 "anchor_to": "left_middle",
                 "bindings": [
                   {
                     "binding_name": "#form_button_text",
                     "binding_type": "collection",
-                    "binding_collection_name": "form_buttons"
-                  }
-                ]
-              }
-            },
-            {
-              "form_button@common_buttons.light_text_button": {
-                "$pressed_button_name": "button.form_button_click",
-                "anchor_from": "top_left",
-                "anchor_to": "top_left",
-                "size": [104, 50],
-                "layer": 8,
-                "$button_text": "#null",
-                "$button_text_binding_type": "collection",
-                "$button_text_grid_collection_name": "form_buttons",
-                "$button_text_max_size": ["100%", 20],
-                "bindings": [
-                  {
-                    "binding_type": "collection_details",
                     "binding_collection_name": "form_buttons"
                   }
                 ]

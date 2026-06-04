@@ -34,7 +34,7 @@
 
 ## 📥 Instalacion
 
-1. Descarga **`holograms_v1.mcaddon`** y abrelo (Minecraft importa los 2 packs).
+1. Descarga **`holograms_v2.mcaddon`** y abrelo (Minecraft importa los 2 packs).
 2. Activa **ambos** packs (behavior + resource) en el mundo.
 3. En el chat escribe **`!holo`** para recibir el **Proyector** y la **Varita**.
 4. Usa el **Proyector** para abrir el menu y **Crear** tu primer holograma.
