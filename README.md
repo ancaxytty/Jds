@@ -38,7 +38,7 @@ Toca un NPC para **editarlo o hablar con él**; agáchate (sneak) + toca para ab
 
 | Archivo | Para qué sirve |
 |---|---|
-| [`custom_npc_addon.mcaddon`](custom_npc_addon.mcaddon) | **Instalación con 1 clic** (behavior + resource pack). |
+| [`custom_npc_v6.mcaddon`](custom_npc_v6.mcaddon) | **Instalación con 1 clic** (behavior + resource pack). |
 | [`custom_npc_addon/behavior_pack.mcpack`](custom_npc_addon/behavior_pack.mcpack) | Solo el behavior pack (scripts + entidad). |
 | [`custom_npc_addon/resource_pack.mcpack`](custom_npc_addon/resource_pack.mcpack) | Solo el resource pack (texturas + modelos). |
 | [`custom_npc_addon_complete.zip`](custom_npc_addon_complete.zip) | Código fuente completo + paquetes. |
@@ -84,7 +84,7 @@ Más detalles en **[`custom_npc_addon/README.md`](custom_npc_addon/README.md)**.
 
 ## 📥 Instalación rápida
 
-1. Descarga **`custom_npc_addon.mcaddon`** y ábrelo (Minecraft lo importa solo).
+1. Descarga **`custom_npc_v6.mcaddon`** y ábrelo (Minecraft lo importa solo).
 2. Activa **ambos** packs (behavior + resource) en el mundo.
 3. En el chat escribe `!npc` para el huevo (o `/summon custom:npc`).
 4. **Toca** el NPC → editar/hablar · **sneak + toca** → editor.

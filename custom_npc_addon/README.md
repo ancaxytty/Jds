@@ -81,7 +81,7 @@ está en `resource_pack/particles/npc_aura.particle.json`.
 ---
 
 ## 📥 Instalación
-- **`custom_npc_addon.mcaddon`**: importa los 3 packs (behavior + resource + tema UI
+- **`custom_npc_v6.mcaddon`**: importa los 3 packs (behavior + resource + tema UI
   opcional). Activa **behavior + resource**; el tema de UI es opcional.
 - O importa los `.mcpack` por separado.
 
