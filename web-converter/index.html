@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Voxel Forge - Modelos 3D a Minecraft Bedrock</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧊</text></svg>" />
+
+<!-- Three.js + addons + JSZip from CDN (requires internet the first time) -->
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/",
+    "jszip": "https://cdn.jsdelivr.net/npm/jszip@3.10.1/+esm"
+  }
+}
+</script>
+</head>
+<body>
+<div class="bg"></div>
+<div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+
+<div class="wrap">
+  <header>
+    <div class="logo"><span class="cube">🧊</span> Voxel Forge</div>
+    <div class="subtitle">Convierte modelos 3D (GLB, OBJ, FBX...) a geometría de Minecraft Bedrock <strong>.geo.json</strong> + textura, estilo Blockbench.</div>
+    <div class="badges" id="badges"></div>
+  </header>
+
+  <div class="grid">
+    <!-- LEFT: input + controls -->
+    <div class="card">
+      <h2><span class="dot"></span> 1 · Sube tu modelo</h2>
+      <div class="drop" id="drop">
+        <div class="icon">📦</div>
+        <p><strong>Arrastra</strong> tu modelo aquí o haz click para elegir.</p>
+        <p>GLB lleva sus texturas incrustadas. Para GLTF/OBJ, selecciona también <strong>.bin/.mtl y las imágenes</strong>.</p>
+        <input type="file" id="file" multiple class="hidden"
+               accept=".glb,.gltf,.obj,.mtl,.fbx,.stl,.ply,.dae,.3mf,.vox,.wrl,.amf,.usdz,.bin,.png,.jpg,.jpeg,.webp" />
+      </div>
+
+      <div class="controls" style="margin-top:18px">
+        <div class="field">
+          <label>Resolución (voxeles en el lado mayor): <span class="val" id="resVal">24</span></label>
+          <input type="range" id="res" min="8" max="48" step="1" value="24" />
+        </div>
+        <div class="field">
+          <label>Densidad de muestreo: <span class="val" id="densVal">2.0</span></label>
+          <input type="range" id="dens" min="1" max="4" step="0.5" value="2" />
+        </div>
+        <div class="field">
+          <label>Nombre del modelo</label>
+          <input type="text" id="name" value="mi_modelo" />
+        </div>
+        <div class="row">
+          <label class="check"><input type="checkbox" id="merge" checked /> Unir cubos (menos cubos)</label>
+          <label class="check"><input type="checkbox" id="rotate" checked /> Girar preview</label>
+        </div>
+        <button class="btn full" id="convert" disabled>⚙️ Convertir a Minecraft</button>
+      </div>
+
+      <div class="progress-wrap" id="progWrap">
+        <div class="progress"><div class="bar" id="bar"></div></div>
+        <div class="status" id="status"></div>
+      </div>
+
+      <div class="stats" id="stats" style="display:none">
+        <div class="stat"><div class="k">Triángulos</div><div class="v" id="stTris">-</div></div>
+        <div class="stat"><div class="k">Voxeles</div><div class="v" id="stVox">-</div></div>
+        <div class="stat"><div class="k">Cubos generados</div><div class="v" id="stCubes">-</div></div>
+        <div class="stat"><div class="k">Textura</div><div class="v" id="stTex">-</div></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: preview + download -->
+    <div class="card">
+      <h2><span class="dot"></span> 2 · Vista previa y descarga</h2>
+      <canvas id="preview"></canvas>
+      <div class="preview-hint">Arrastra para rotar · rueda para zoom</div>
+      <button class="btn secondary full" id="download" disabled style="margin-top:16px">⬇️ Descargar .zip (modelo + textura)</button>
+    </div>
+  </div>
+
+  <footer>
+    Voxel Forge · conversión voxel (malla → cubos Bedrock). Hecho con Three.js + JSZip · creado con Kiro.
+  </footer>
+</div>
+
+<div id="toast"></div>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
+import { FBXLoader } from 'three/addons/loaders/FBXLoader.js';
+import { STLLoader } from 'three/addons/loaders/STLLoader.js';
+import { PLYLoader } from 'three/addons/loaders/PLYLoader.js';
+import { ColladaLoader } from 'three/addons/loaders/ColladaLoader.js';
+import { ThreeMFLoader } from 'three/addons/loaders/3MFLoader.js';
+import { VOXLoader, VOXMesh } from 'three/addons/loaders/VOXLoader.js';
+import { VRMLLoader } from 'three/addons/loaders/VRMLLoader.js';
+import { AMFLoader } from 'three/addons/loaders/AMFLoader.js';
+import { USDZLoader } from 'three/addons/loaders/USDZLoader.js';
+import JSZip from 'jszip';
+
+// ---------------------------------------------------------------- DOM
+const $ = (id) => document.getElementById(id);
+const dropEl = $('drop'), fileEl = $('file'), convertBtn = $('convert'), downloadBtn = $('download');
+const resEl = $('res'), densEl = $('dens'), nameEl = $('name'), mergeEl = $('merge'), rotateEl = $('rotate');
+const barEl = $('bar'), statusEl = $('status'), progWrap = $('progWrap'), statsEl = $('stats');
+const toastEl = $('toast');
+
+const FORMATS = ['GLB','GLTF','OBJ','FBX','STL','PLY','DAE','3MF','VOX','WRL','AMF','USDZ'];
+$('badges').innerHTML = FORMATS.map(f => `<span class="badge">${f}</span>`).join('');
+
+resEl.oninput = () => $('resVal').textContent = resEl.value;
+densEl.oninput = () => $('densVal').textContent = parseFloat(densEl.value).toFixed(1);
+
+function toast(msg, err = false) {
+  toastEl.textContent = msg; toastEl.className = err ? 'show err' : 'show';
+  setTimeout(() => toastEl.className = '', 3600);
+}
+function setStatus(t) { statusEl.innerHTML = t; }
+function setProgress(p) { progWrap.classList.add('show'); barEl.style.width = Math.round(p * 100) + '%'; }
+
+// Button ripple
+for (const b of document.querySelectorAll('.btn')) {
+  b.addEventListener('click', (e) => {
+    const r = document.createElement('span'); r.className = 'ripple';
+    const rect = b.getBoundingClientRect(); const d = Math.max(rect.width, rect.height);
+    r.style.width = r.style.height = d + 'px';
+    r.style.left = (e.clientX - rect.left - d / 2) + 'px';
+    r.style.top = (e.clientY - rect.top - d / 2) + 'px';
+    b.appendChild(r); setTimeout(() => r.remove(), 600);
+  });
+}
+
+// ---------------------------------------------------------------- Three preview
+const canvas = $('preview');
+const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(45, 1, 0.01, 5000);
+camera.position.set(2.4, 1.8, 2.8);
+const controls = new OrbitControls(camera, canvas);
+controls.enableDamping = true;
+scene.add(new THREE.AmbientLight(0xffffff, 0.85));
+const key = new THREE.DirectionalLight(0xffffff, 1.1); key.position.set(3, 5, 2); scene.add(key);
+const fill = new THREE.DirectionalLight(0x88aaff, 0.5); fill.position.set(-3, 2, -2); scene.add(fill);
+const grid = new THREE.GridHelper(4, 8, 0x335577, 0x223044); scene.add(grid);
+let currentModel = null;
+
+function resize() {
+  const w = canvas.clientWidth, h = canvas.clientHeight || 380;
+  renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+}
+new ResizeObserver(resize).observe(canvas); resize();
+
+(function animate() {
+  requestAnimationFrame(animate);
+  if (currentModel && rotateEl.checked) currentModel.rotation.y += 0.006;
+  controls.update();
+  renderer.render(scene, camera);
+})();
+
+function frameObject(obj) {
+  const box = new THREE.Box3().setFromObject(obj);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z) || 1;
+  const scale = 2 / maxDim;
+  obj.scale.setScalar(scale);
+  box.setFromObject(obj); box.getCenter(center); box.getSize(size);
+  obj.position.sub(center); obj.position.y += size.y / 2;
+  camera.position.set(maxDim ? 2.4 : 3, 1.8, 2.8);
+  controls.target.set(0, size.y / 2, 0); controls.update();
+}
+
+// ---------------------------------------------------------------- File handling
+let loadedObject = null;
+
+dropEl.addEventListener('click', () => fileEl.click());
+fileEl.addEventListener('change', () => handleFiles(fileEl.files));
+['dragenter', 'dragover'].forEach(ev => dropEl.addEventListener(ev, e => { e.preventDefault(); dropEl.classList.add('drag'); }));
+['dragleave', 'drop'].forEach(ev => dropEl.addEventListener(ev, e => { e.preventDefault(); dropEl.classList.remove('drag'); }));
+dropEl.addEventListener('drop', e => { if (e.dataTransfer?.files?.length) handleFiles(e.dataTransfer.files); });
+
+const ext = (n) => n.toLowerCase().split('.').pop();
+
+async function handleFiles(fileList) {
+  try {
+    const files = Array.from(fileList);
+    if (!files.length) return;
+    const modelExts = ['glb','gltf','obj','fbx','stl','ply','dae','3mf','vox','wrl','amf','usdz'];
+    const main = files.find(f => modelExts.includes(ext(f.name)));
+    if (!main) { toast('No se encontró un modelo 3D compatible.', true); return; }
+
+    setStatus('<span class="spinner"></span> Cargando modelo...');
+    setProgress(0.1);
+
+    // Build a map: basename(lower) -> object URL, for resolving referenced resources
+    const fileMap = new Map();
+    for (const f of files) fileMap.set(f.name.toLowerCase(), URL.createObjectURL(f));
+
+    const manager = new THREE.LoadingManager();
+    manager.setURLModifier((url) => {
+      const base = decodeURIComponent(url.split('/').pop().split('?')[0]).toLowerCase();
+      return fileMap.get(base) || url;
+    });
+
+    const obj = await loadByExtension(main, fileMap, manager);
+    if (!obj) { toast('No se pudo interpretar el modelo.', true); setProgress(0); return; }
+
+    if (currentModel) scene.remove(currentModel);
+    loadedObject = obj;
+    currentModel = obj;
+    scene.add(obj);
+    frameObject(obj);
+
+    setStatus('✅ Modelo cargado: <strong>' + main.name + '</strong>');
+    setProgress(0);
+    progWrap.classList.remove('show');
+    convertBtn.disabled = false;
+    if (!nameEl.value || nameEl.value === 'mi_modelo') nameEl.value = main.name.replace(/\.[^.]+$/, '').replace(/[^a-z0-9_]/gi, '_').toLowerCase();
+    toast('Modelo cargado correctamente.');
+  } catch (err) {
+    console.error(err);
+    toast('Error al cargar: ' + (err.message || err), true);
+    setProgress(0); progWrap.classList.remove('show');
+  }
+}
+
+function loadAsync(loader, url) {
+  return new Promise((res, rej) => loader.load(url, res, undefined, rej));
+}
+
+async function loadByExtension(file, fileMap, manager) {
+  const e = ext(file.name);
+  const url = fileMap.get(file.name.toLowerCase());
+
+  if (e === 'glb' || e === 'gltf') {
+    const loader = new GLTFLoader(manager);
+    try {
+      const draco = new DRACOLoader();
+      draco.setDecoderPath('https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/libs/draco/');
+      loader.setDRACOLoader(draco);
+    } catch (_) {}
+    const gltf = await loadAsync(loader, url);
+    return gltf.scene || gltf.scenes?.[0];
+  }
+  if (e === 'obj') {
+    const objLoader = new OBJLoader(manager);
+    const mtlName = Array.from(fileMap.keys()).find(k => k.endsWith('.mtl'));
+    if (mtlName) {
+      try {
+        const mtlLoader = new MTLLoader(manager);
+        const materials = await loadAsync(mtlLoader, fileMap.get(mtlName));
+        materials.preload(); objLoader.setMaterials(materials);
+      } catch (_) {}
+    }
+    return await loadAsync(objLoader, url);
+  }
+  if (e === 'fbx') return await loadAsync(new FBXLoader(manager), url);
+  if (e === 'dae') { const c = await loadAsync(new ColladaLoader(manager), url); return c.scene; }
+  if (e === '3mf') return await loadAsync(new ThreeMFLoader(manager), url);
+  if (e === 'wrl') return await loadAsync(new VRMLLoader(manager), url);
+  if (e === 'amf') return await loadAsync(new AMFLoader(manager), url);
+  if (e === 'usdz') return await loadAsync(new USDZLoader(manager), url);
+  if (e === 'stl') {
+    const geo = await loadAsync(new STLLoader(manager), url);
+    geo.computeVertexNormals();
+    return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0xb0c4de }));
+  }
+  if (e === 'ply') {
+    const geo = await loadAsync(new PLYLoader(manager), url);
+    geo.computeVertexNormals();
+    const hasColor = !!geo.getAttribute('color');
+    return new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0xb0c4de, vertexColors: hasColor }));
+  }
+  if (e === 'vox') {
+    const chunks = await loadAsync(new VOXLoader(manager), url);
+    const group = new THREE.Group();
+    for (const ch of chunks) group.add(new VOXMesh(ch));
+    return group;
+  }
+  return null;
+}
+
+// ---------------------------------------------------------------- Color samplers
+const samplerCache = new Map();
+function getSampler(material) {
+  if (!material) return { color: [180, 180, 180] };
+  const mat = Array.isArray(material) ? material[0] : material;
+  if (samplerCache.has(mat.uuid)) return samplerCache.get(mat.uuid);
+  let sampler;
+  const tex = mat.map;
+  const img = tex && tex.image;
+  if (img && (img.width || img.videoWidth)) {
+    try {
+      const w = img.width || img.videoWidth, h = img.height || img.videoHeight;
+      const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+      const cx = cv.getContext('2d', { willReadFrequently: true });
+      cx.drawImage(img, 0, 0, w, h);
+      sampler = { data: cx.getImageData(0, 0, w, h).data, w, h };
+    } catch (_) { sampler = colorOf(mat); }
+  } else {
+    sampler = colorOf(mat);
+  }
+  samplerCache.set(mat.uuid, sampler);
+  return sampler;
+}
+function colorOf(mat) {
+  if (mat && mat.color) {
+    const c = mat.color;
+    return { color: [Math.round(c.r * 255), Math.round(c.g * 255), Math.round(c.b * 255)] };
+  }
+  return { color: [180, 180, 180] };
+}
+function sampleColor(sampler, u, v, vcol) {
+  if (vcol) return vcol;
+  if (sampler.color) return sampler.color;
+  let uu = u - Math.floor(u), vv = v - Math.floor(v);
+  const x = Math.min(sampler.w - 1, Math.max(0, Math.floor(uu * sampler.w)));
+  const y = Math.min(sampler.h - 1, Math.max(0, Math.floor((1 - vv) * sampler.h)));
+  const i = (y * sampler.w + x) * 4;
+  return [sampler.data[i], sampler.data[i + 1], sampler.data[i + 2]];
+}
+
+// ---------------------------------------------------------------- Gather triangles
+function gatherTriangles(root) {
+  const tris = [];
+  root.updateWorldMatrix(true, true);
+  root.traverse((node) => {
+    if (!node.isMesh || !node.geometry) return;
+    let geo = node.geometry;
+    const pos = geo.getAttribute('position'); if (!pos) return;
+    const uv = geo.getAttribute('uv');
+    const col = geo.getAttribute('color');
+    const idx = geo.getIndex();
+    const sampler = getSampler(node.material);
+    const mw = node.matrixWorld;
+    const vA = new THREE.Vector3(), vB = new THREE.Vector3(), vC = new THREE.Vector3();
+    const count = idx ? idx.count : pos.count;
+    for (let i = 0; i < count; i += 3) {
+      const a = idx ? idx.getX(i) : i, b = idx ? idx.getX(i + 1) : i + 1, c = idx ? idx.getX(i + 2) : i + 2;
+      vA.fromBufferAttribute(pos, a).applyMatrix4(mw);
+      vB.fromBufferAttribute(pos, b).applyMatrix4(mw);
+      vC.fromBufferAttribute(pos, c).applyMatrix4(mw);
+      const t = {
+        ax: vA.x, ay: vA.y, az: vA.z, bx: vB.x, by: vB.y, bz: vB.z, cx: vC.x, cy: vC.y, cz: vC.z,
+        sampler
+      };
+      if (uv) { t.uva = [uv.getX(a), uv.getY(a)]; t.uvb = [uv.getX(b), uv.getY(b)]; t.uvc = [uv.getX(c), uv.getY(c)]; }
+      if (col) {
+        t.cola = [col.getX(a) * 255, col.getY(a) * 255, col.getZ(a) * 255];
+        t.colb = [col.getX(b) * 255, col.getY(b) * 255, col.getZ(b) * 255];
+        t.colc = [col.getX(c) * 255, col.getY(c) * 255, col.getZ(c) * 255];
+      }
+      tris.push(t);
+    }
+  });
+  return tris;
+}
+
+// ---------------------------------------------------------------- Voxelize (surface point sampling)
+async function voxelize(tris, resolution, density) {
+  // bounds
+  let minx = Infinity, miny = Infinity, minz = Infinity, maxx = -Infinity, maxy = -Infinity, maxz = -Infinity;
+  for (const t of tris) {
+    minx = Math.min(minx, t.ax, t.bx, t.cx); maxx = Math.max(maxx, t.ax, t.bx, t.cx);
+    miny = Math.min(miny, t.ay, t.by, t.cy); maxy = Math.max(maxy, t.ay, t.by, t.cy);
+    minz = Math.min(minz, t.az, t.bz, t.cz); maxz = Math.max(maxz, t.az, t.bz, t.cz);
+  }
+  const sx = maxx - minx || 1e-6, sy = maxy - miny || 1e-6, sz = maxz - minz || 1e-6;
+  const maxDim = Math.max(sx, sy, sz);
+  const scale = resolution / maxDim;            // world units -> voxels
+  const dimX = Math.max(1, Math.ceil(sx * scale));
+  const dimY = Math.max(1, Math.ceil(sy * scale));
+  const dimZ = Math.max(1, Math.ceil(sz * scale));
+
+  const voxels = new Map(); // key -> {r,g,b,n}
+  const key = (x, y, z) => x + ',' + y + ',' + z;
+
+  const total = tris.length;
+  for (let ti = 0; ti < total; ti++) {
+    const t = tris[ti];
+    // triangle edges in voxel space
+    const ax = (t.ax - minx) * scale, ay = (t.ay - miny) * scale, az = (t.az - minz) * scale;
+    const bx = (t.bx - minx) * scale, by = (t.by - miny) * scale, bz = (t.bz - minz) * scale;
+    const cx = (t.cx - minx) * scale, cy = (t.cy - miny) * scale, cz = (t.cz - minz) * scale;
+    // area (in voxel units) to decide sample count
+    const e1x = bx - ax, e1y = by - ay, e1z = bz - az;
+    const e2x = cx - ax, e2y = cy - ay, e2z = cz - az;
+    const crx = e1y * e2z - e1z * e2y, cry = e1z * e2x - e1x * e2z, crz = e1x * e2y - e1y * e2x;
+    const area = 0.5 * Math.sqrt(crx * crx + cry * cry + crz * crz);
+    const n = Math.max(1, Math.min(4000, Math.ceil(area * density * 2)));
+    const steps = Math.max(1, Math.ceil(Math.sqrt(n)));
+    for (let i = 0; i <= steps; i++) {
+      for (let j = 0; j <= steps - i; j++) {
+        const u = i / steps, v = j / steps; const w = 1 - u - v;
+        if (w < 0) continue;
+        const px = ax * w + bx * u + cx * v;
+        const py = ay * w + by * u + cy * v;
+        const pz = az * w + bz * u + cz * v;
+        const vx = Math.min(dimX - 1, Math.floor(px));
+        const vy = Math.min(dimY - 1, Math.floor(py));
+        const vz = Math.min(dimZ - 1, Math.floor(pz));
+        // color
+        let rgb;
+        if (t.cola) {
+          rgb = [t.cola[0] * w + t.colb[0] * u + t.colc[0] * v,
+                 t.cola[1] * w + t.colb[1] * u + t.colc[1] * v,
+                 t.cola[2] * w + t.colb[2] * u + t.colc[2] * v];
+        } else if (t.uva) {
+          const tu = t.uva[0] * w + t.uvb[0] * u + t.uvc[0] * v;
+          const tv = t.uva[1] * w + t.uvb[1] * u + t.uvc[1] * v;
+          rgb = sampleColor(t.sampler, tu, tv);
+        } else {
+          rgb = sampleColor(t.sampler, 0, 0);
+        }
+        const k = key(vx, vy, vz);
+        let cur = voxels.get(k);
+        if (!cur) { cur = { r: 0, g: 0, b: 0, n: 0 }; voxels.set(k, cur); }
+        cur.r += rgb[0]; cur.g += rgb[1]; cur.b += rgb[2]; cur.n++;
+      }
+    }
+    if ((ti & 1023) === 0) { setProgress(0.1 + 0.6 * (ti / total)); await new Promise(r => setTimeout(r)); }
+  }
+  return { voxels, dimX, dimY, dimZ };
+}
+
+// ---------------------------------------------------------------- Build geometry + atlas
+function quant(v) { return Math.max(0, Math.min(255, Math.round(v / 8) * 8)); }
+
+function buildGeometry(vox, name, merge) {
+  const { voxels, dimX, dimY, dimZ } = vox;
+  // grid of palette indices (-1 empty)
+  const palette = []; const palMap = new Map();
+  const grid = new Int32Array(dimX * dimY * dimZ).fill(-1);
+  const gi = (x, y, z) => (y * dimZ + z) * dimX + x;
+  for (const [k, c] of voxels) {
+    const [x, y, z] = k.split(',').map(Number);
+    const r = quant(c.r / c.n), g = quant(c.g / c.n), b = quant(c.b / c.n);
+    const ck = (r << 16) | (g << 8) | b;
+    let pi = palMap.get(ck);
+    if (pi === undefined) { pi = palette.length; palMap.set(ck, pi); palette.push([r, g, b]); }
+    grid[gi(x, y, z)] = pi;
+  }
+
+  // atlas
+  const P = palette.length || 1;
+  const aw = Math.ceil(Math.sqrt(P));
+  const ah = Math.ceil(P / aw);
+  const cv = document.createElement('canvas'); cv.width = aw; cv.height = ah;
+  const cx = cv.getContext('2d');
+  const imgData = cx.createImageData(aw, ah);
+  for (let i = 0; i < P; i++) {
+    const [r, g, b] = palette[i]; const o = i * 4;
+    imgData.data[o] = r; imgData.data[o + 1] = g; imgData.data[o + 2] = b; imgData.data[o + 3] = 255;
+  }
+  cx.putImageData(imgData, 0, 0);
+
+  const faceUV = (pi) => {
+    const px = pi % aw, py = Math.floor(pi / aw);
+    const u = { uv: [px, py], uv_size: [1, 1] };
+    return { north: u, south: u, east: u, west: u, up: u, down: u };
+  };
+
+  const offX = -dimX / 2, offZ = -dimZ / 2;
+  const cubes = [];
+  if (merge) {
+    // greedy merge along X for equal palette index
+    for (let y = 0; y < dimY; y++) for (let z = 0; z < dimZ; z++) {
+      let x = 0;
+      while (x < dimX) {
+        const pi = grid[gi(x, y, z)];
+        if (pi < 0) { x++; continue; }
+        let len = 1;
+        while (x + len < dimX && grid[gi(x + len, y, z)] === pi) len++;
+        cubes.push({ origin: [x + offX, y, z + offZ], size: [len, 1, 1], uv: faceUV(pi) });
+        x += len;
+      }
+    }
+  } else {
+    for (const [k] of voxels) {
+      const [x, y, z] = k.split(',').map(Number);
+      const pi = grid[gi(x, y, z)];
+      cubes.push({ origin: [x + offX, y, z + offZ], size: [1, 1, 1], uv: faceUV(pi) });
+    }
+  }
+
+  const geo = {
+    format_version: "1.16.0",
+    "minecraft:geometry": [{
+      description: {
+        identifier: "geometry." + name,
+        texture_width: aw,
+        texture_height: ah,
+        visible_bounds_width: Math.max(dimX, dimZ) / 8 + 1,
+        visible_bounds_height: dimY / 8 + 1,
+        visible_bounds_offset: [0, dimY / 16, 0]
+      },
+      bones: [{ name: "root", pivot: [0, 0, 0], cubes }]
+    }]
+  };
+  return { geo, canvas: cv, cubeCount: cubes.length, atlas: [aw, ah] };
+}
+
+function canvasToBlob(canvas) {
+  return new Promise(res => canvas.toBlob(res, 'image/png'));
+}
+
+// ---------------------------------------------------------------- Convert pipeline
+let lastResult = null;
+
+convertBtn.addEventListener('click', async () => {
+  if (!loadedObject) { toast('Primero sube un modelo.', true); return; }
+  convertBtn.disabled = true; downloadBtn.disabled = true;
+  statsEl.style.display = 'none';
+  try {
+    setStatus('<span class="spinner"></span> Analizando malla...');
+    setProgress(0.05);
+    await new Promise(r => setTimeout(r, 30));
+    const tris = gatherTriangles(loadedObject);
+    if (!tris.length) { toast('El modelo no tiene geometría triangulada.', true); convertBtn.disabled = false; return; }
+
+    setStatus('<span class="spinner"></span> Voxelizando (' + tris.length.toLocaleString() + ' triángulos)...');
+    const vox = await voxelize(tris, parseInt(resEl.value), parseFloat(densEl.value));
+
+    setStatus('<span class="spinner"></span> Construyendo geometría Bedrock...');
+    setProgress(0.85);
+    await new Promise(r => setTimeout(r, 20));
+    const name = (nameEl.value || 'mi_modelo').replace(/[^a-z0-9_]/gi, '_').toLowerCase();
+    const built = buildGeometry(vox, name, mergeEl.checked);
+    setProgress(1);
+
+    lastResult = { name, ...built, voxCount: vox.voxels.size, triCount: tris.length };
+
+    $('stTris').textContent = tris.length.toLocaleString();
+    $('stVox').textContent = vox.voxels.size.toLocaleString();
+    $('stCubes').textContent = built.cubeCount.toLocaleString();
+    $('stTex').textContent = built.atlas[0] + '×' + built.atlas[1] + ' px';
+    statsEl.style.display = 'grid';
+
+    setStatus('✅ Conversión lista. Ya puedes descargar el .zip.');
+    downloadBtn.disabled = false;
+    if (built.cubeCount > 6000) toast('Aviso: ' + built.cubeCount + ' cubos. Baja la resolución si va lento en Minecraft.', true);
+    else toast('¡Conversión completada!');
+  } catch (err) {
+    console.error(err); toast('Error al convertir: ' + (err.message || err), true);
+    setStatus('❌ Error: ' + (err.message || err));
+  } finally {
+    convertBtn.disabled = false;
+    setTimeout(() => progWrap.classList.remove('show'), 1200);
+  }
+});
+
+// ---------------------------------------------------------------- Download zip
+downloadBtn.addEventListener('click', async () => {
+  if (!lastResult) return;
+  try {
+    setStatus('<span class="spinner"></span> Empaquetando .zip...');
+    const { name, geo, canvas } = lastResult;
+    const zip = new JSZip();
+    zip.file(`models/entity/${name}.geo.json`, JSON.stringify(geo, null, 2));
+    const blob = await canvasToBlob(canvas);
+    zip.file(`textures/entity/${name}.png`, blob);
+    zip.file('COMO_USAR.txt', howTo(name));
+    const out = await zip.generateAsync({ type: 'blob' });
+    const url = URL.createObjectURL(out);
+    const a = document.createElement('a');
+    a.href = url; a.download = `${name}_minecraft.zip`; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    setStatus('✅ Descargado: ' + name + '_minecraft.zip');
+    toast('Archivo .zip descargado.');
+  } catch (err) {
+    console.error(err); toast('Error al empaquetar: ' + (err.message || err), true);
+  }
+});
+
+function howTo(name) {
+  return [
+    'COMO USAR EN MINECRAFT BEDROCK',
+    '================================',
+    '',
+    'Archivos:',
+    `  models/entity/${name}.geo.json   -> geometria (identifier: geometry.${name})`,
+    `  textures/entity/${name}.png      -> textura (atlas de colores)`,
+    '',
+    '1) Copia ambos archivos dentro de tu RESOURCE PACK respetando las carpetas.',
+    '2) En tu entidad cliente (client_entity .json):',
+    '     "geometry": { "default": "geometry.' + name + '" },',
+    '     "textures": { "default": "textures/entity/' + name + '" }',
+    '3) Tambien puedes abrir el .geo.json directamente en Blockbench (File > Open).',
+    '',
+    'Nota: la conversion es de tipo VOXEL (la malla se aproxima con cubos),',
+    'que es la unica forma de representar mallas arbitrarias como geometria',
+    'de cubos de Minecraft Bedrock. Sube la resolucion para mas detalle',
+    '(y mas cubos), o bajala para mejor rendimiento.',
+    '',
+    'Creado con Voxel Forge.'
+  ].join('\n');
+}
+
+toast('Listo. Sube un modelo 3D para empezar.');
+</script>
+</body>
+</html>
