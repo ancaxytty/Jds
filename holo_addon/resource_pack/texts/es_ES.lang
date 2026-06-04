@@ -1,0 +1,14 @@
+## Floating Holograms Addon - Espanol (Espana)
+
+## Entity Names
+entity.holo:hologram.name=Holograma
+
+## Spawn Egg
+item.spawn_egg.entity.holo:hologram.name=Generar Holograma
+
+## Interactions
+action.holo.edit=Editar holograma
+
+## Items
+item.holo:projector=Proyector de Holograma
+item.holo:wand=Varita de Holograma

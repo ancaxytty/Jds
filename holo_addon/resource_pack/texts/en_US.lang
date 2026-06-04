@@ -1,0 +1,14 @@
+## Floating Holograms Addon - English (US)
+
+## Entity Names
+entity.holo:hologram.name=Hologram
+
+## Spawn Egg
+item.spawn_egg.entity.holo:hologram.name=Spawn Hologram
+
+## Interactions
+action.holo.edit=Edit Hologram
+
+## Items
+item.holo:projector=Hologram Projector
+item.holo:wand=Hologram Wand

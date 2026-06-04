@@ -1,0 +1,38 @@
+{
+  "format_version": 2,
+  "header": {
+    "name": "§b§lHologramas §r§7| Flotantes Pro",
+    "description": "§eHologramas flotantes editables con menu interactivo.\n§7Usa el §bProyector de Holograma§7 para crear y editar.\n§8v1.0.0 - by Kiro",
+    "uuid": "1bdd2e38-13c4-43be-899f-0c6f101dd556",
+    "version": [1, 0, 0],
+    "min_engine_version": [1, 21, 0]
+  },
+  "modules": [
+    {
+      "type": "data",
+      "uuid": "87761e4f-c2dc-4bd9-afc6-2cec895c30e4",
+      "version": [1, 0, 0]
+    },
+    {
+      "type": "script",
+      "language": "javascript",
+      "uuid": "c4b5f386-2bcf-4254-a96f-04c2d3b76ced",
+      "version": [1, 0, 0],
+      "entry": "scripts/main.js"
+    }
+  ],
+  "dependencies": [
+    {
+      "uuid": "7aa256cb-a57c-404f-920a-f538a4e55f17",
+      "version": [1, 0, 0]
+    },
+    {
+      "module_name": "@minecraft/server",
+      "version": "1.11.0"
+    },
+    {
+      "module_name": "@minecraft/server-ui",
+      "version": "1.2.0"
+    }
+  ]
+}

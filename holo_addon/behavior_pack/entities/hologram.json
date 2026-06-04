@@ -1,0 +1,117 @@
+{
+  "format_version": "1.21.0",
+  "minecraft:entity": {
+    "description": {
+      "identifier": "holo:hologram",
+      "is_spawnable": true,
+      "is_summonable": true,
+      "is_experimental": false,
+      "properties": {
+        "holo:glow": {
+          "type": "int",
+          "range": [0, 1],
+          "default": 0,
+          "client_sync": true
+        }
+      }
+    },
+
+    "component_groups": {
+      "holo:size_xs": { "minecraft:scale": { "value": 0.5 } },
+      "holo:size_s":  { "minecraft:scale": { "value": 0.8 } },
+      "holo:size_m":  { "minecraft:scale": { "value": 1.0 } },
+      "holo:size_l":  { "minecraft:scale": { "value": 1.4 } },
+      "holo:size_xl": { "minecraft:scale": { "value": 2.0 } },
+      "holo:size_xxl":{ "minecraft:scale": { "value": 3.0 } }
+    },
+
+    "components": {
+      "minecraft:type_family": {
+        "family": ["hologram", "holo", "inanimate"]
+      },
+      "minecraft:collision_box": {
+        "width": 0.001,
+        "height": 0.001
+      },
+      "minecraft:health": {
+        "value": 1,
+        "max": 1
+      },
+      "minecraft:damage_sensor": {
+        "triggers": [
+          { "cause": "all", "deals_damage": false }
+        ]
+      },
+      "minecraft:fire_immune": {},
+      "minecraft:knockback_resistance": { "value": 1.0, "max": 1.0 },
+      "minecraft:pushable": {
+        "is_pushable": false,
+        "is_pushable_by_piston": false
+      },
+      "minecraft:physics": {
+        "has_gravity": false,
+        "has_collision": false
+      },
+      "minecraft:has_gravity": { "value": false },
+      "minecraft:movement": { "value": 0.0 },
+      "minecraft:nameable": {
+        "always_show": true,
+        "allow_name_tag_renaming": false
+      },
+      "minecraft:persistent": {},
+      "minecraft:conditional_bandwidth_optimization": {},
+      "minecraft:interact": {
+        "interactions": [
+          {
+            "on_interact": {
+              "filters": {
+                "test": "is_family",
+                "subject": "other",
+                "value": "player"
+              },
+              "event": "holo:noop",
+              "target": "self"
+            },
+            "use_item": false,
+            "swing": false,
+            "play_sounds": "",
+            "interact_text": "action.holo.edit"
+          }
+        ]
+      }
+    },
+
+    "events": {
+      "holo:noop": {},
+
+      "minecraft:entity_spawned": {
+        "add": { "component_groups": ["holo:size_m"] }
+      },
+
+      "holo:size_xs": {
+        "remove": { "component_groups": ["holo:size_s", "holo:size_m", "holo:size_l", "holo:size_xl", "holo:size_xxl"] },
+        "add": { "component_groups": ["holo:size_xs"] }
+      },
+      "holo:size_s": {
+        "remove": { "component_groups": ["holo:size_xs", "holo:size_m", "holo:size_l", "holo:size_xl", "holo:size_xxl"] },
+        "add": { "component_groups": ["holo:size_s"] }
+      },
+      "holo:size_m": {
+        "remove": { "component_groups": ["holo:size_xs", "holo:size_s", "holo:size_l", "holo:size_xl", "holo:size_xxl"] },
+        "add": { "component_groups": ["holo:size_m"] }
+      },
+      "holo:size_l": {
+        "remove": { "component_groups": ["holo:size_xs", "holo:size_s", "holo:size_m", "holo:size_xl", "holo:size_xxl"] },
+        "add": { "component_groups": ["holo:size_l"] }
+      },
+      "holo:size_xl": {
+        "remove": { "component_groups": ["holo:size_xs", "holo:size_s", "holo:size_m", "holo:size_l", "holo:size_xxl"] },
+        "add": { "component_groups": ["holo:size_xl"] }
+      },
+      "holo:size_xxl": {
+        "remove": { "component_groups": ["holo:size_xs", "holo:size_s", "holo:size_m", "holo:size_l", "holo:size_xl"] },
+        "add": { "component_groups": ["holo:size_xxl"] }
+      }
+    }
+  }
+}
