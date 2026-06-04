@@ -14,6 +14,11 @@ Toca un NPC para **editarlo o hablar con él**; agáchate (sneak) + toca para ab
 
 **Versión:** 4.0.0 · **Compatibilidad:** Minecraft Bedrock **1.21.0+** · **Experimentos:** no requeridos
 
+### 🆕 v6.0.0
+- 🪄 **Varita 3D** (`custom:npc_wand`, modelo + textura 3D) **requerida para abrir el editor**. Consíguela con `!npc`.
+- ✨ **Partículas editables**: elige efecto (aura 3D custom, llama, corazones, portal…) y patrón 3D (anillo, hélice, fuente, órbita, corona).
+- 🧱 Texturas de modelos **sin solape/bleeding** (más padding en el atlas).
+
 ### 🆕 v5.0.0
 - 🏆 **30 modelos 3D profesionales** (multi-cubo) con **textura propia** cada uno.
 - 🎨 Texturas mejoradas (degradados, bordes, detalles) y **pack_icon profesional** nuevo.

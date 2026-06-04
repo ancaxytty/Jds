@@ -3,14 +3,14 @@
   "minecraft:geometry": [
     {
       "description": {
-        "identifier": "geometry.model_10",
-        "texture_width": 76,
-        "texture_height": 84,
-        "visible_bounds_width": 2.125,
-        "visible_bounds_height": 2.9375,
+        "identifier": "geometry.npc_wand",
+        "texture_width": 20,
+        "texture_height": 48,
+        "visible_bounds_width": 2,
+        "visible_bounds_height": 3,
         "visible_bounds_offset": [
           0,
-          0.96875,
+          1,
           0
         ]
       },
@@ -22,17 +22,22 @@
             0,
             0
           ],
+          "rotation": [
+            0,
+            0,
+            0
+          ],
           "cubes": [
             {
               "origin": [
-                -4,
+                -1,
                 0,
-                -4
+                -1
               ],
               "size": [
-                8,
-                16,
-                8
+                2,
+                12,
+                2
               ],
               "uv": [
                 2,
@@ -41,66 +46,66 @@
             },
             {
               "origin": [
-                -5,
-                15,
-                -5
-              ],
-              "size": [
-                10,
-                8,
-                10
-              ],
-              "uv": [
-                2,
-                28
-              ]
-            },
-            {
-              "origin": [
-                -9,
-                23,
-                -9
-              ],
-              "size": [
-                18,
-                8,
-                18
-              ],
-              "uv": [
-                2,
-                48
-              ]
-            },
-            {
-              "origin": [
-                -9,
+                -2,
                 10,
                 -2
               ],
               "size": [
-                5,
-                3,
-                3
-              ],
-              "uv": [
-                2,
-                76
-              ]
-            },
-            {
-              "origin": [
                 4,
-                10,
+                2,
+                4
+              ],
+              "uv": [
+                2,
+                18
+              ]
+            },
+            {
+              "origin": [
+                -2,
+                12,
                 -2
               ],
               "size": [
-                5,
-                3,
-                3
+                4,
+                4,
+                4
               ],
               "uv": [
-                20,
-                76
+                2,
+                26
+              ]
+            },
+            {
+              "origin": [
+                -3,
+                13,
+                -1
+              ],
+              "size": [
+                2,
+                2,
+                2
+              ],
+              "uv": [
+                2,
+                36
+              ]
+            },
+            {
+              "origin": [
+                1,
+                13,
+                -1
+              ],
+              "size": [
+                2,
+                2,
+                2
+              ],
+              "uv": [
+                2,
+                42
               ]
             }
           ]

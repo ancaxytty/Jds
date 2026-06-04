@@ -9,3 +9,6 @@ item.spawn_egg.entity.custom:npc.name=Generar NPC Personalizado
 ## Interactions
 action.npc.edit=Abrir editor de NPC
 action.interact.trade=Comerciar
+
+## Items
+item.custom:npc_wand=Varita de NPC

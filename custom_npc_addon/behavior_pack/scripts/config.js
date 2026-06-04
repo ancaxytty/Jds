@@ -23,8 +23,37 @@ export const DP = {
   dialogue: "npc:dialogue",
   talk: "npc:talk",
   trades: "npc:trades",
+  particleOn: "npc:particle_on",
+  particleId: "npc:particle_id",
+  particlePattern: "npc:particle_pattern",
   init: "npc:init",
 };
+
+// Item id of the 3D wand required to open the editor menu
+export const WAND_ID = "custom:npc_wand";
+
+// Editable particle effects (label -> particle id). First is the custom 3D aura.
+export const PARTICLES = [
+  { label: "§bAura 3D (custom)", id: "custom:npc_aura" },
+  { label: "§cLlama", id: "minecraft:basic_flame_particle" },
+  { label: "§dCorazones", id: "minecraft:heart_particle" },
+  { label: "§aFeliz (aldeano)", id: "minecraft:villager_happy" },
+  { label: "§eChispa final", id: "minecraft:end_rod" },
+  { label: "§5Portal", id: "minecraft:portal_particle" },
+  { label: "§fNota", id: "minecraft:note_particle" },
+  { label: "§6Lava", id: "minecraft:lava_particle" },
+  { label: "§7Humo", id: "minecraft:basic_smoke_particle" },
+  { label: "§9Encantamiento", id: "minecraft:enchanting_table_particle" },
+];
+
+// Particle arrangement patterns (3D)
+export const PATTERNS = [
+  "§bAnillo giratorio",
+  "§dHelice (espiral)",
+  "§aFuente (arriba)",
+  "§eOrbita doble",
+  "§6Corona (halo)",
+];
 
 // Common items for the trade editor dropdown (label -> item id)
 export const COMMON_ITEMS = [
@@ -138,6 +167,9 @@ export const DEFAULTS = {
   dialogue: "",
   talk: false,
   trades: "[]",
+  particleOn: true,
+  particleId: "custom:npc_aura",
+  particlePattern: 0,
 };
 
 export const MAX_DAMAGE = 100;

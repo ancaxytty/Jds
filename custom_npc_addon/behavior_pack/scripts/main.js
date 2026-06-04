@@ -1,28 +1,25 @@
 // =====================================================================
 //  Custom NPC Pro Editor  -  main entry point
-//  by Kiro  -  v5.0.0
+//  by Kiro  -  v6.0.0
 //
-//  Interact with a Custom NPC:
-//   - sneak + tap  -> always opens the EDITOR
-//   - tap          -> shop (if trader) / dialogue (if talk) / editor
-//   - commands set to "run on click" execute on every tap
-//
-//  Features: name, tags, commands (run on save & on click), functions,
-//  size, 30 pro 3D models (own textures), skin, look, movement on/off,
-//  damage, animations, parchment dialogues, EDITABLE TRADES (shop),
-//  presets, custom 3D aura particles, and more.
+//  - Hold the 3D NPC Wand and tap an NPC -> opens the EDITOR menu.
+//  - Tap without the wand -> shop (trader) / dialogue (talk).
+//  - "Run on click" commands execute on every tap.
+//  - Editable 3D particle auras around each NPC.
 // =====================================================================
 import { world, system } from "@minecraft/server";
-import { NPC_ID, DP } from "./config.js";
+import { NPC_ID, DP, WAND_ID, PATTERNS } from "./config.js";
 import { openMainMenu, showDialogue, showTrades } from "./ui.js";
 import { getConfig, runCommands } from "./npc.js";
 
 // ---------------------------------------------------------------------
-// Interaction: run-on-click commands, then shop / dialogue / editor
+// Interaction: wand opens editor; otherwise shop / dialogue
 // ---------------------------------------------------------------------
 world.afterEvents.playerInteractWithEntity.subscribe((ev) => {
-  const { player, target } = ev;
+  const { player, target, itemStack } = ev;
   if (!target || target.typeId !== NPC_ID) return;
+
+  const holdingWand = !!itemStack && itemStack.typeId === WAND_ID;
 
   let trader = false, talk = false, hasDialogue = false, runOnClick = false, commands = "";
   try {
@@ -34,28 +31,26 @@ world.afterEvents.playerInteractWithEntity.subscribe((ev) => {
     hasDialogue = typeof d === "string" && d.trim().length > 0;
   } catch (e) { /* ignore */ }
 
-  // Commands that should run when the NPC is clicked.
   if (runOnClick && commands.trim().length) {
     system.run(() => { try { runCommands(target, commands); } catch (e) {} });
   }
 
-  // Sneak always opens the editor.
-  if (player.isSneaking) {
+  // The 3D wand is REQUIRED to open the editor.
+  if (holdingWand) {
     system.run(() => openMainMenu(player, target).catch((e) => console.warn("[CustomNPC] " + e)));
     return;
   }
-  // Trader: open our editable shop screen.
+
+  // Without the wand: shop, then dialogue, else a hint.
   if (trader) {
     system.run(() => showTrades(player, target).catch((e) => console.warn("[CustomNPC] " + e)));
     return;
   }
-  // Dialogue mode.
   if (talk && hasDialogue) {
     system.run(() => showDialogue(player, target).catch((e) => console.warn("[CustomNPC] " + e)));
     return;
   }
-  // Otherwise the editor.
-  system.run(() => openMainMenu(player, target).catch((e) => console.warn("[CustomNPC] " + e)));
+  try { player.onScreenDisplay.setActionBar("§7Usa la §bVarita de NPC§7 para editar este NPC."); } catch (e) {}
 });
 
 // ---------------------------------------------------------------------
@@ -74,11 +69,44 @@ world.afterEvents.entityHitEntity.subscribe((ev) => {
 });
 
 // ---------------------------------------------------------------------
-// Custom 3D aura particles: a rotating 3D ring of custom particles
-// around each NPC near a player (gives a 3D, animated effect).
+// Editable 3D particle auras (pattern + effect per NPC)
 // ---------------------------------------------------------------------
 let pTick = 0;
-const RING = 7;
+function emitPattern(e, id, pattern, t) {
+  const loc = e.location;
+  const spawn = (x, y, z) => {
+    try { e.dimension.spawnParticle(id, { x: loc.x + x, y: loc.y + y, z: loc.z + z }); } catch (err) {}
+  };
+  const TAU = Math.PI * 2;
+  if (pattern === 1) { // helix
+    for (let k = 0; k < 3; k++) {
+      const a = t * 2 + k * (TAU / 3);
+      const y = ((t * 0.5 + k * 0.33) % 1) * 2.0;
+      spawn(Math.cos(a) * 0.6, 0.2 + y, Math.sin(a) * 0.6);
+    }
+  } else if (pattern === 2) { // fountain
+    for (let k = 0; k < 3; k++) {
+      const a = Math.random() * TAU;
+      spawn(Math.cos(a) * 0.25, 1.8, Math.sin(a) * 0.25);
+    }
+  } else if (pattern === 3) { // double orbit
+    for (let k = 0; k < 4; k++) {
+      const a = t + k * (TAU / 4);
+      spawn(Math.cos(a) * 0.85, 1.0, Math.sin(a) * 0.85);
+      spawn(Math.cos(-a) * 0.55, 1.4, Math.sin(-a) * 0.55);
+    }
+  } else if (pattern === 4) { // crown / halo (flat ring up high)
+    for (let k = 0; k < 8; k++) {
+      const a = t * 0.5 + k * (TAU / 8);
+      spawn(Math.cos(a) * 0.5, 2.1, Math.sin(a) * 0.5);
+    }
+  } else { // 0 ring
+    for (let k = 0; k < 7; k++) {
+      const a = t + k * (TAU / 7);
+      spawn(Math.cos(a) * 0.75, 1.0 + Math.sin(t * 0.8 + k) * 0.35, Math.sin(a) * 0.75);
+    }
+  }
+}
 system.runInterval(() => {
   pTick++;
   const t = pTick * 0.5;
@@ -89,23 +117,21 @@ system.runInterval(() => {
     try { npcs = p.dimension.getEntities({ location: p.location, maxDistance: 18, type: NPC_ID }); }
     catch (e) { continue; }
     for (const e of npcs) {
-      const loc = e.location;
-      for (let k = 0; k < RING; k++) {
-        const a = t + k * (Math.PI * 2 / RING);
-        const r = 0.75;
-        const pos = {
-          x: loc.x + Math.cos(a) * r,
-          y: loc.y + 1.0 + Math.sin(t * 0.8 + k) * 0.35,
-          z: loc.z + Math.sin(a) * r,
-        };
-        try { e.dimension.spawnParticle("custom:npc_aura", pos); } catch (err) { /* particle not loaded */ }
-      }
+      let on = true, id = "custom:npc_aura", pat = 0;
+      try {
+        const v = e.getDynamicProperty(DP.particleOn);
+        on = v === undefined ? true : !!v;
+        id = e.getDynamicProperty(DP.particleId) || "custom:npc_aura";
+        pat = (e.getDynamicProperty(DP.particlePattern) | 0) || 0;
+      } catch (err) {}
+      if (!on) continue;
+      emitPattern(e, id, pat, t);
     }
   }
 }, 5);
 
 // ---------------------------------------------------------------------
-// Helper chat command: "!npc" gives a spawn egg and quick help.
+// Helper chat command: "!npc" gives the 3D wand + spawn egg and help.
 // ---------------------------------------------------------------------
 world.beforeEvents.chatSend.subscribe((ev) => {
   if (ev.message.trim().toLowerCase() !== "!npc") return;
@@ -113,11 +139,12 @@ world.beforeEvents.chatSend.subscribe((ev) => {
   const player = ev.sender;
   system.run(() => {
     try { player.runCommand("give @s custom:npc_spawn_egg"); } catch (e) {}
+    try { player.runCommand("give @s custom:npc_wand"); } catch (e) {}
     player.sendMessage([
-      "§a§l=== Custom NPC Pro Editor v5 ===",
+      "§a§l=== Custom NPC Pro Editor v6 ===",
       "§7Coloca el §ehuevo generador§7 para crear un NPC.",
-      "§7Toca el NPC: §etienda / dialogo / editor§7 (sneak + toca = editor).",
-      "§730 modelos 3D, intercambios editables, particulas 3D y mas.",
+      "§7Sostén la §bVarita de NPC§7 y toca el NPC para abrir el §eeditor§7.",
+      "§7Sin varita: tienda / dialogo. 30 modelos 3D, particulas editables y mas.",
     ].join("\n"));
   });
 });
@@ -125,7 +152,7 @@ world.beforeEvents.chatSend.subscribe((ev) => {
 // ---------------------------------------------------------------------
 // Startup + safety refresh of visuals on load
 // ---------------------------------------------------------------------
-system.run(() => console.log("[CustomNPC] Pro Editor v5.0.0 cargado correctamente."));
+system.run(() => console.log("[CustomNPC] Pro Editor v6.0.0 cargado correctamente."));
 
 world.afterEvents.worldInitialize?.subscribe(() => {
   system.runTimeout(() => {

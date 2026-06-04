@@ -4,8 +4,8 @@
     {
       "description": {
         "identifier": "geometry.model_27",
-        "texture_width": 50,
-        "texture_height": 42,
+        "texture_width": 52,
+        "texture_height": 46,
         "visible_bounds_width": 1.75,
         "visible_bounds_height": 1.875,
         "visible_bounds_offset": [
@@ -35,8 +35,8 @@
                 6
               ],
               "uv": [
-                1,
-                1
+                2,
+                2
               ]
             },
             {
@@ -51,8 +51,8 @@
                 12
               ],
               "uv": [
-                1,
-                17
+                2,
+                19
               ]
             },
             {
@@ -67,8 +67,8 @@
                 2
               ],
               "uv": [
-                1,
-                36
+                2,
+                39
               ]
             },
             {
@@ -83,8 +83,8 @@
                 2
               ],
               "uv": [
-                10,
-                36
+                12,
+                39
               ]
             },
             {
@@ -99,8 +99,8 @@
                 2
               ],
               "uv": [
-                19,
-                36
+                22,
+                39
               ]
             },
             {
@@ -115,8 +115,8 @@
                 1
               ],
               "uv": [
-                28,
-                36
+                32,
+                39
               ]
             },
             {
@@ -131,8 +131,8 @@
                 1
               ],
               "uv": [
-                33,
-                36
+                38,
+                39
               ]
             }
           ]

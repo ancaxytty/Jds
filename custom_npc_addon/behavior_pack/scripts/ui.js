@@ -3,7 +3,7 @@
 // =====================================================================
 import { system } from "@minecraft/server";
 import { ActionFormData, ModalFormData, MessageFormData } from "@minecraft/server-ui";
-import { SKINS, SIZES, ANIMS, MAX_DAMAGE, NPC_ID, modelLabels, MODEL_NAMES, COMMON_ITEMS } from "./config.js";
+import { SKINS, SIZES, ANIMS, MAX_DAMAGE, NPC_ID, modelLabels, MODEL_NAMES, COMMON_ITEMS, PARTICLES, PATTERNS } from "./config.js";
 import { forceShow, uiSound, msg } from "./util.js";
 import * as NPC from "./npc.js";
 import * as Presets from "./presets.js";
@@ -49,6 +49,7 @@ export async function openMainMenu(player, npc) {
     .button("§l§dTamano", "textures/items/blaze_powder")
     .button("§l§5Animacion", "textures/items/firework_star")
     .button("§l§aComportamiento", "textures/items/spyglass")
+    .button("§l§dParticulas §8(editable)", "textures/items/blaze_rod")
     .button("§l§cDano", "textures/items/diamond_sword")
     .button("§l§6Dialogos", "textures/items/book_normal")
     .button("§l§2Intercambios §8(Tienda)", "textures/items/emerald")
@@ -68,14 +69,15 @@ export async function openMainMenu(player, npc) {
     case 3: return editSize(player, npc);
     case 4: return editAnim(player, npc);
     case 5: return editBehavior(player, npc);
-    case 6: return editDamage(player, npc);
-    case 7: return editDialogue(player, npc);
-    case 8: return tradesEditor(player, npc);
-    case 9: return tagsMenu(player, npc);
-    case 10: return editCommands(player, npc);
-    case 11: return editFunctions(player, npc);
-    case 12: return presetsMenu(player, npc);
-    case 13: return actionsMenu(player, npc);
+    case 6: return editParticles(player, npc);
+    case 7: return editDamage(player, npc);
+    case 8: return editDialogue(player, npc);
+    case 9: return tradesEditor(player, npc);
+    case 10: return tagsMenu(player, npc);
+    case 11: return editCommands(player, npc);
+    case 12: return editFunctions(player, npc);
+    case 13: return presetsMenu(player, npc);
+    case 14: return actionsMenu(player, npc);
   }
 }
 
@@ -189,6 +191,26 @@ async function editBehavior(player, npc) {
   NPC.setTrader(npc, trader);
   uiSound(player);
   if (trader) msg(player, "§eTienda activada: §7toca el NPC = abrir tienda. Define items en §fIntercambios§7. Sneak + toca = editor.");
+  back(player, npc);
+}
+
+// ---------------------------------------------------------------------
+// PARTICLES (editable)
+// ---------------------------------------------------------------------
+async function editParticles(player, npc) {
+  const c = NPC.getConfig(npc);
+  const pIdx = Math.max(0, PARTICLES.findIndex((p) => p.id === c.particleId));
+  const form = new ModalFormData()
+    .title("§l§dParticulas")
+    .toggle("§7Activar particulas", c.particleOn)
+    .dropdown("§7Efecto de particula", PARTICLES.map((p) => p.label), pIdx < 0 ? 0 : pIdx)
+    .dropdown("§7Patron 3D", PATTERNS, c.particlePattern);
+  const r = await forceShow(player, form);
+  if (!r || r.canceled) return back(player, npc);
+  const [on, pSel, pat] = r.formValues;
+  NPC.setParticles(npc, on, PARTICLES[pSel].id, pat);
+  uiSound(player);
+  msg(player, on ? `§aParticulas: §f${PARTICLES[pSel].label} §7(${PATTERNS[pat]})` : "§7Particulas desactivadas.");
   back(player, npc);
 }
 

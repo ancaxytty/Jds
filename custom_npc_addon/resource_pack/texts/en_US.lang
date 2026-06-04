@@ -9,3 +9,6 @@ item.spawn_egg.entity.custom:npc.name=Spawn Custom NPC
 ## Interactions
 action.npc.edit=Open NPC Editor
 action.interact.trade=Trade
+
+## Items
+item.custom:npc_wand=NPC Wand

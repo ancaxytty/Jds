@@ -46,6 +46,9 @@ export function getConfig(npc) {
     dialogue: getDP(npc, DP.dialogue, DEFAULTS.dialogue),
     talk: getDP(npc, DP.talk, DEFAULTS.talk),
     trades: getDP(npc, DP.trades, DEFAULTS.trades),
+    particleOn: getDP(npc, DP.particleOn, DEFAULTS.particleOn),
+    particleId: getDP(npc, DP.particleId, DEFAULTS.particleId),
+    particlePattern: getDP(npc, DP.particlePattern, DEFAULTS.particlePattern),
   };
 }
 
@@ -145,6 +148,12 @@ export function setDialogue(npc, text) {
 
 export function setTalk(npc, on) {
   npc.setDynamicProperty(DP.talk, !!on);
+}
+
+export function setParticles(npc, on, id, pattern) {
+  npc.setDynamicProperty(DP.particleOn, !!on);
+  if (id !== undefined) npc.setDynamicProperty(DP.particleId, String(id));
+  if (pattern !== undefined) npc.setDynamicProperty(DP.particlePattern, pattern | 0);
 }
 
 // ---------------------------------------------------------------------
@@ -339,6 +348,9 @@ export function applyConfig(npc, cfg) {
   if (cfg.functions !== undefined) setFunctions(npc, cfg.functions);
   if (cfg.dialogue !== undefined) setDialogue(npc, cfg.dialogue);
   if (cfg.talk !== undefined) setTalk(npc, cfg.talk);
+  if (cfg.particleOn !== undefined) npc.setDynamicProperty(DP.particleOn, !!cfg.particleOn);
+  if (cfg.particleId !== undefined) npc.setDynamicProperty(DP.particleId, String(cfg.particleId));
+  if (cfg.particlePattern !== undefined) npc.setDynamicProperty(DP.particlePattern, cfg.particlePattern | 0);
   if (cfg.trades !== undefined) npc.setDynamicProperty(DP.trades, typeof cfg.trades === "string" ? cfg.trades : JSON.stringify(cfg.trades));
 }
 

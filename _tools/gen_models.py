@@ -40,7 +40,7 @@ def box(cubes,x,y,z,w,h,d,color,role=None):
     if w<=0 or h<=0 or d<=0: return
     cubes.append({"origin":[x,y,z],"size":[w,h,d],"color":tuple(color),"role":role})
 
-def pack_and_paint(cubes,pad=1):
+def pack_and_paint(cubes,pad=2):
     foot=[(2*(c["size"][2]+c["size"][0]), c["size"][2]+c["size"][1]) for c in cubes]
     aw=max(16,max(f[0] for f in foot)+pad*2)
     if aw%2: aw+=1

@@ -4,7 +4,21 @@
 > propia), **intercambios editables (tienda)**, **diálogos estilo pergamino**,
 > **partículas 3D custom**, comandos que se ejecutan al guardar o al tocar, y mucho más.
 
-**Versión:** 5.0.0 · **Compatibilidad:** Minecraft Bedrock **1.21.0+** · **Experimentos:** no requeridos
+**Versión:** 6.0.0 · **Compatibilidad:** Minecraft Bedrock **1.21.0+** · **Experimentos:** no requeridos
+
+---
+
+## 🆕 Novedades v6.0.0
+
+- 🪄 **Varita 3D requerida para editar**: el editor del NPC **solo abre** si sostienes la
+  **Varita de NPC** (`custom:npc_wand`), un ítem con **modelo 3D (model.json) y textura 3D**.
+  Sin varita, tocar el NPC abre la tienda / diálogo. Consíguela con `!npc` o
+  `/give @s custom:npc_wand`.
+- ✨ **Sistema de partículas editables**: en el editor → **Partículas** eliges el **efecto**
+  (Aura 3D custom, llama, corazones, portal, end rod, nota…) y el **patrón 3D** (anillo,
+  hélice, fuente, órbita doble, corona) y on/off. Cada NPC guarda su propia config.
+- 🧱 **Texturas sin solape (bleeding)**: el atlas usa más padding entre caras para que las
+  texturas de los modelos no "colisionen".
 
 ---
 
